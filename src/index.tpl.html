@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>永生办证中心 · HTML 原型 V0.8</title>
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div id="app" hidden>
+  <header id="top"></header>
+  <main>
+    <section id="mapcol">
+      <div id="mapwrap">
+        <canvas id="map"></canvas>
+        <div id="alerts"></div>
+        <div id="petcard"></div>
+        <div id="mapctl">
+          <button class="mini" data-act="zoom" data-a="1.2" title="放大">＋</button>
+          <button class="mini" data-act="zoom" data-a="0.83" title="缩小">－</button>
+          <button class="mini" data-act="zoom" data-a="0" title="复位视角">⌂</button>
+        </div>
+        <div id="legend"></div>
+        <div id="subtitle"></div>
+      </div>
+      <div id="logbox"></div>
+    </section>
+    <aside id="panel">
+      <nav id="tabs"></nav>
+      <div id="tabbody"></div>
+    </aside>
+  </main>
+</div>
+<div id="start"></div>
+<div id="modal" hidden></div>
+<div id="toast"></div>
+<input type="file" id="importfile" accept=".json,application/json" hidden>
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>
