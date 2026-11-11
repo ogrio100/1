@@ -1,0 +1,3435 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>永生办证中心 · HTML 原型 V0.8</title>
+<style>
+:root {
+  --cream: #fdf6e9; --paper: #fffdf8; --mint: #3fae93; --mint-d: #2c8a73; --mint-l: #e2f4ee; --coral: #e9795d; --coral-d: #c75f45; --coral-l: #ffe9e1;
+  --ink: #2f443d; --mute: #7b8f87; --line: #e3dccb; --gold: #d99a2b; --blue: #2f6fe0; --purple: #7b3fc4; --bad: #d9534f;
+  --r: 12px; --shadow: 0 6px 20px rgba(60, 80, 70, .13);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 13px/1.5 "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Hiragino Sans GB", system-ui, sans-serif; color: var(--ink); background: var(--cream); overflow: hidden; }
+[hidden] { display: none !important; }
+button, select, input { font: inherit; color: inherit; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* 顶栏 */
+#top { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--paper); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+#top .brand { font-weight: 800; font-size: 15px; color: var(--coral-d); cursor: pointer; max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#top .brand small { display: block; font-weight: 600; font-size: 10.5px; color: var(--mute); }
+.stat { display: flex; flex-direction: column; padding: 2px 10px; border-left: 1px solid var(--line); min-width: 74px; }
+.stat b { font-size: 14px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 10.5px; color: var(--mute); }
+.stat .up { color: var(--mint-d); } .stat .down { color: var(--bad); }
+.grow { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }
+.seg button { border: 0; background: transparent; padding: 5px 11px; cursor: pointer; font-weight: 700; color: var(--mute); }
+.seg button.on { background: var(--mint); color: #fff; }
+.seg button:hover:not(.on) { background: var(--mint-l); }
+
+.btn { border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 4px 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.btn:hover { border-color: var(--mint); background: var(--mint-l); }
+.btn.pri { background: var(--mint); border-color: var(--mint-d); color: #fff; }
+.btn.pri:hover { background: var(--mint-d); }
+.btn.warn { background: var(--coral-l); border-color: #f1b9a8; color: var(--coral-d); }
+.btn.warn:hover { background: var(--coral); color: #fff; }
+.btn.sm { padding: 2px 7px; font-size: 12px; border-radius: 7px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; background: #f4f1ea; border-color: var(--line); color: var(--mute); }
+.mini { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, .92); cursor: pointer; font-weight: 800; }
+.mini:hover { background: var(--mint-l); }
+select, input[type=text], input[type=number], input[type=search] { border: 1px solid var(--line); border-radius: 8px; padding: 3px 6px; background: #fff; max-width: 100%; }
+select:focus, input:focus { outline: 2px solid var(--mint); outline-offset: 0; }
+
+/* 主体 */
+main { flex: 1; display: flex; min-height: 0; }
+#mapcol { flex: 1 1 58%; min-width: 50%; display: flex; flex-direction: column; min-height: 0; }
+#mapwrap { position: relative; flex: 1; min-height: 0; }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+#alerts { position: absolute; left: 10px; top: 10px; display: flex; flex-direction: column; gap: 5px; max-width: 46%; pointer-events: none; }
+.alert { pointer-events: auto; background: rgba(255, 253, 248, .95); border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 9px; padding: 3px 9px; cursor: pointer; font-size: 12px; box-shadow: 0 2px 8px rgba(60, 80, 70, .08); }
+.alert.bad { border-left-color: var(--bad); } .alert.ask { border-left-color: var(--purple); } .alert.good { border-left-color: var(--mint); }
+.alert:hover { background: #fff; }
+#petcard { position: absolute; right: 10px; top: 10px; width: 330px; max-width: 60%; }
+.pet { background: #fbf4ff; border: 1px solid #d9bdf0; border-radius: var(--r); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 8px; }
+.pet h4 { margin: 0 0 4px; color: var(--purple); font-size: 13px; }
+.pet q { display: block; font-style: italic; color: #5a3f78; margin: 4px 0 6px; }
+.pet .row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+#mapctl { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+#legend { position: absolute; left: 10px; bottom: 10px; background: rgba(255, 253, 248, .9); border: 1px solid var(--line); border-radius: 9px; padding: 4px 9px; font-size: 11px; color: var(--mute); display: flex; gap: 10px; flex-wrap: wrap; max-width: 70%; }
+#legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px; vertical-align: -1px; }
+#subtitle { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); background: rgba(47, 68, 61, .86); color: #fff; padding: 5px 14px; border-radius: 999px; font-size: 12.5px; max-width: 80%; text-align: center; opacity: 0; transition: opacity .4s; pointer-events: none; }
+#subtitle.on { opacity: 1; }
+#logbox { height: 132px; overflow-y: auto; background: var(--paper); border-top: 1px solid var(--line); padding: 5px 10px; font-size: 12px; }
+.lg { padding: 1px 0; border-bottom: 1px dashed #efe8d8; }
+.lg time { color: var(--mute); margin-right: 6px; font-variant-numeric: tabular-nums; }
+.lg.k-key { color: #7a4b00; font-weight: 600; } .lg.k-ask { color: var(--purple); font-weight: 600; } .lg.k-bad { color: var(--bad); } .lg.k-good { color: var(--mint-d); } .lg.k-cast { color: var(--mute); font-style: italic; }
+
+/* 右侧面板 */
+#panel { flex: 0 0 42%; max-width: 620px; min-width: 380px; display: flex; flex-direction: column; background: var(--paper); border-left: 1px solid var(--line); min-height: 0; }
+#tabs { display: flex; border-bottom: 1px solid var(--line); }
+#tabs button { flex: 1; border: 0; background: transparent; padding: 9px 4px; cursor: pointer; font-weight: 700; color: var(--mute); border-bottom: 3px solid transparent; }
+#tabs button.on { color: var(--mint-d); border-bottom-color: var(--mint); background: var(--mint-l); }
+#tabs button .dot { display: inline-block; min-width: 16px; padding: 0 4px; border-radius: 9px; background: var(--coral); color: #fff; font-size: 10.5px; margin-left: 4px; }
+#tabbody { flex: 1; overflow-y: auto; padding: 10px 12px 30px; }
+h3 { margin: 14px 0 6px; font-size: 13.5px; color: var(--mint-d); display: flex; align-items: center; gap: 6px; }
+h3:first-child { margin-top: 0; }
+h3 small { font-weight: 500; color: var(--mute); font-size: 11.5px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; margin-bottom: 7px; }
+.card.hl { border-color: var(--coral); box-shadow: 0 0 0 2px var(--coral-l); }
+.row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.row.sp { justify-content: space-between; }
+.mut { color: var(--mute); } .sm { font-size: 11.5px; } .b { font-weight: 700; }
+.ok { color: var(--mint-d); } .bad { color: var(--bad); } .warnc { color: var(--gold); } .pur { color: var(--purple); }
+.tag { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #f0ece0; color: #6b6248; white-space: nowrap; }
+.tag.g { background: var(--mint-l); color: var(--mint-d); } .tag.r { background: var(--coral-l); color: var(--coral-d); } .tag.b { background: #e3ecff; color: #2a57b5; } .tag.p { background: #f1e6fb; color: var(--purple); } .tag.y { background: #fff1cf; color: #8a6200; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 4px; vertical-align: -1px; }
+.bar { display: inline-block; width: 70px; height: 7px; border-radius: 4px; background: #ece6d6; overflow: hidden; vertical-align: middle; }
+.bar i { display: block; height: 100%; background: var(--mint); border-radius: 4px; }
+.bar.r i { background: var(--coral); } .bar.y i { background: var(--gold); } .bar.w { width: 110px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; color: var(--mute); font-weight: 600; padding: 3px 4px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 4px 4px; border-bottom: 1px solid #f1ecdf; vertical-align: top; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--mint-l); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.kv dt { color: var(--mute); } .kv dd { margin: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.hint { background: #fff8e6; border: 1px dashed #ecd9a6; border-radius: 9px; padding: 5px 9px; font-size: 12px; color: #7a5f1c; margin: 6px 0; }
+.sat { font-style: italic; color: var(--mute); font-size: 11.5px; }
+
+/* 弹窗 */
+#modal { position: fixed; inset: 0; background: rgba(47, 68, 61, .32); display: flex; align-items: center; justify-content: center; z-index: 30; padding: 18px; }
+.dlg { background: var(--paper); border-radius: 16px; box-shadow: 0 16px 50px rgba(40, 60, 50, .3); width: 640px; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.dlg.wide { width: 760px; }
+.dlg > header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: linear-gradient(90deg, var(--mint-l), #fff6ea); border-bottom: 1px solid var(--line); }
+.dlg > header h2 { margin: 0; font-size: 16px; flex: 1; }
+.dlg > header h2 small { font-size: 11.5px; font-weight: 500; color: var(--mute); margin-left: 6px; }
+.dlg .x { border: 0; background: transparent; font-size: 20px; cursor: pointer; color: var(--mute); line-height: 1; }
+.dlg .body { padding: 12px 14px 16px; overflow-y: auto; }
+.dtabs { display: flex; gap: 4px; padding: 8px 14px 0; border-bottom: 1px solid var(--line); }
+.dtabs button { border: 1px solid var(--line); border-bottom: 0; background: #f6f1e4; border-radius: 9px 9px 0 0; padding: 5px 12px; cursor: pointer; font-weight: 700; color: var(--mute); }
+.dtabs button.on { background: var(--paper); color: var(--mint-d); position: relative; top: 1px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .12); }
+.buildgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.buildgrid .card { cursor: pointer; margin: 0; }
+.buildgrid .card:hover { border-color: var(--mint); background: var(--mint-l); }
+.buildgrid .card.dis { opacity: .5; cursor: not-allowed; }
+.buildgrid .card.dis:hover { border-color: var(--line); background: #fff; }
+
+/* 开局 */
+#start { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto;
+  background: radial-gradient(1200px 600px at 20% 10%, #dff3ec, transparent), radial-gradient(900px 600px at 90% 90%, #ffe4d9, transparent), var(--cream); }
+.startbox { background: var(--paper); border-radius: 20px; box-shadow: var(--shadow); padding: 26px 30px; width: 560px; max-width: 100%; }
+.startbox h1 { margin: 0; font-size: 28px; color: var(--coral-d); letter-spacing: 2px; }
+.startbox .en { color: var(--mute); letter-spacing: 3px; font-size: 11.5px; margin-bottom: 12px; }
+.startbox label { display: block; margin: 10px 0 3px; font-weight: 700; }
+.startbox input[type=text] { width: 100%; padding: 7px 10px; font-size: 14px; }
+.startbox .go { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.startbox .go .btn { padding: 8px 16px; font-size: 14px; }
+.startbox ul { margin: 8px 0 0; padding-left: 18px; color: #5a6e66; font-size: 12.5px; }
+.err { color: var(--bad); font-size: 12px; min-height: 18px; }
+
+#toast { position: fixed; left: 50%; top: 62px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.toast { background: rgba(47, 68, 61, .93); color: #fff; padding: 6px 14px; border-radius: 999px; box-shadow: var(--shadow); font-size: 12.5px; max-width: 80vw; animation: tin .2s ease-out; }
+.toast.bad { background: rgba(190, 60, 55, .95); }
+@keyframes tin { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 1000px) {
+  #panel { flex-basis: 40%; min-width: 320px; }
+  .stat { min-width: 60px; padding: 2px 6px; }
+}
+
+</style>
+</head>
+<body>
+<div id="app" hidden>
+  <header id="top"></header>
+  <main>
+    <section id="mapcol">
+      <div id="mapwrap">
+        <canvas id="map"></canvas>
+        <div id="alerts"></div>
+        <div id="petcard"></div>
+        <div id="mapctl">
+          <button class="mini" data-act="zoom" data-a="1.2" title="放大">＋</button>
+          <button class="mini" data-act="zoom" data-a="0.83" title="缩小">－</button>
+          <button class="mini" data-act="zoom" data-a="0" title="复位视角">⌂</button>
+        </div>
+        <div id="legend"></div>
+        <div id="subtitle"></div>
+      </div>
+      <div id="logbox"></div>
+    </section>
+    <aside id="panel">
+      <nav id="tabs"></nav>
+      <div id="tabbody"></div>
+    </aside>
+  </main>
+</div>
+<div id="start"></div>
+<div id="modal" hidden></div>
+<div id="toast"></div>
+<input type="file" id="importfile" accept=".json,application/json" hidden>
+<script>
+"use strict";
+const IB = (function(){
+"use strict";
+// 《永生办证中心》HTML 原型 V0.8 —— 静态数据（数值均为原型平衡样例，单位为虚构货币 C）
+const D = {
+  VERSION: '0.8',
+  DAY_START: 510,            // 08:30
+  DAY_END: 1050,             // 17:30
+  YEAR_DAYS: 60,
+  MONTH_DAYS: 5,
+  W_SLOTS: [570, 870],       // 09:30 / 14:30
+  W_DUR: 90,
+  W_SEATS: 6,
+  P_SLOTS: [600, 645, 825, 870, 915, 960],
+  P_DUR: 30,
+  P_STATIONS: 2,
+  REST: { A: [720, 765], B: [765, 810] },
+  START_CASH: 6000,
+  FEES: { reg: 25, visit: 8, written: 35, practical: 25, consult: 18, tutor: 55, counsel: 15, report: 20, pod: 90, special: 280 },
+  COSTS: { pod: 62, paper: 3, hire: 250, bonus: 60, cheatFine: 60 },
+  GRANT: { base: 1500, high: 1750, low: 1200 },
+  ENCOURAGE_PER_DAY: 3,
+  FORMAL_CAP: [0, 10, 14, 18],
+};
+
+D.COURSES = [
+  { id: 'C01', name: '《再生生命工程应用能力认证》', short: '再生生命工程', wLine: 60, pLine: 65, level: 1, diff: 0, alienPen: 0,
+    prac: '复杂细胞重编程理论，最后按绿色按钮', prop: '绿色按钮', icon: '🟢',
+    text: { name: '《再生生命工程·官方指定教程》', price: 66, cost: 27 }, guide: { price: 43, cost: 15 } },
+  { id: 'C02', name: '《高自治智能系统伦理与协同认证》', short: '智能系统伦理', wLine: 65, pLine: 60, level: 1, diff: 1, alienPen: 0,
+    prac: 'AI推演千亿次，考生勾选“已阅读并同意”', prop: '复选框', icon: '☑️',
+    text: { name: '《智能伦理协同·官方指定教程》', price: 70, cost: 29 }, guide: { price: 45, cost: 16 } },
+  { id: 'C03', name: '《深空航行与星际工程适任证书》', short: '深空工程适任', wLine: 65, pLine: 70, level: 2, diff: 2, alienPen: 10,
+    prac: '学造火箭，最后拧三颗螺丝', prop: '三颗螺丝', icon: '🔩',
+    text: { name: '《深空工程适任·官方指定教程》', price: 74, cost: 31 }, guide: { price: 47, cost: 17 } },
+  { id: 'C04', name: '《跨世纪资源治理与持续贡献认证》', short: '跨世纪贡献', wLine: 60, pLine: 60, level: 2, diff: 1, alienPen: 0,
+    prac: '三百年经济规划，给智能货架补三瓶水', prop: '三瓶水', icon: '🧴',
+    text: { name: '《跨世纪资源治理·官方指定教程》', price: 78, cost: 33 }, guide: { price: 49, cost: 18 } },
+  { id: 'C05', name: '《跨文明公共事务与礼制认证》', short: '跨文明礼制', wLine: 60, pLine: 60, level: 2, diff: 1, alienPen: 12,
+    prac: '摆座签、称呼主任、无酒精模拟举杯', prop: '座签', icon: '🪧',
+    text: { name: '《跨文明礼制·官方指定教程》', price: 82, cost: 35 }, guide: { price: 51, cost: 19 } },
+  { id: 'C06', name: '《极端环境生命保障与安全处置资质》', short: '环境安全资质', wLine: 65, pLine: 60, level: 3, diff: 2, alienPen: 12,
+    prac: '超新星灾难课程，最后戴安全帽', prop: '安全帽', icon: '⛑️',
+    text: { name: '《环境安全处置·官方指定教程》', price: 86, cost: 37 }, guide: { price: 53, cost: 20 } },
+  { id: 'C07', name: '《永续公共治理与行政程序认证》', short: '永续行政程序', wLine: 60, pLine: 65, level: 3, diff: 1, alienPen: 0,
+    prac: '千年治理学，最后在方框里盖章', prop: '公章', icon: '🈴',
+    text: { name: '《永续行政程序·官方指定教程》', price: 90, cost: 39 }, guide: { price: 55, cost: 21 } },
+];
+D.COURSE = {};
+D.COURSES.forEach(c => { D.COURSE[c.id] = c; });
+D.FINAL_LICENSE = '《无限期生命延续准入许可证书》';
+D.LEVEL_NAMES = ['', '一级 · 地区基础资格受理中心', '二级 · 跨领域综合认证中心', '三级 · 高级生命准入认证中心'];
+D.UPGRADE = {
+  2: { payers: 6, fees: 160, seatings: 3, trust: 52, comp: 62 },
+  3: { payers: 18, fees: 550, seatings: 10, trust: 58, comp: 68 },
+};
+
+// 书店 SKU：T+课程=官方指定教程；G+课程=当届考试教辅（五年永考·三年模拟）；DIFF=差异指南；ANN=年度精编
+D.BOOKS = {};
+D.COURSES.forEach(c => {
+  D.BOOKS['T' + c.id] = { sku: 'T' + c.id, name: c.text.name, price: c.text.price, cost: c.text.cost, prep: 9, course: c.id, kind: '官方指定教程' };
+  D.BOOKS['G' + c.id] = { sku: 'G' + c.id, name: '《五年永考·三年模拟（' + c.short + '）》', price: c.guide.price, cost: c.guide.cost, prep: 7, course: c.id, kind: '当届考试教辅' };
+});
+D.BOOKS.DIFF = { sku: 'DIFF', name: '《考纲差异与合规要点》', price: 26, cost: 9, prep: 3, course: '', kind: '差异指南' };
+D.BOOKS.ANN = { sku: 'ANN', name: '《年度文明更新精编》', price: 36, cost: 14, prep: 2, course: '', kind: '年度指南（已激活者）' };
+
+D.ROOMS = {
+  reception: { name: '身份登记与查分处', short: '登记查分', cost: 900, upkeep: 20, job: 'receptionist', color: '#bfe8dc', multi: false, zone: 'A', desc: '首次建档、本人返访查分。' },
+  review: { name: '材料审核室', short: '材料审核', cost: 900, upkeep: 18, job: 'reviewer', color: '#cfe6f5', multi: false, zone: 'A', desc: '核对材料；缺件者回家补件后返访。' },
+  cashier: { name: '收费室', short: '收费室', cost: 1000, upkeep: 20, job: 'cashier', color: '#ffe2b8', multi: false, zone: 'A', desc: '结清应缴、办理考试预约。' },
+  bookstore: { name: '资格教材发行中心', short: '永生考试书店', cost: 1400, upkeep: 24, job: 'clerk', color: '#ffd3c4', multi: false, zone: 'C', desc: '真实库存、采购、销售与换版。' },
+  written: { name: '通用六席笔试厅', short: '笔试厅', cost: 1800, upkeep: 30, job: 'proctor', color: '#d9ecff', multi: true, zone: 'B', desc: '每日 09:30 / 14:30 两场，每场一科、最多六席。' },
+  practical: { name: '双工位实操室', short: '实操室', cost: 1600, upkeep: 32, job: 'examiner', color: '#e3f3c9', multi: true, zone: 'B', desc: '两工位，道具按科目切换。' },
+  grading: { name: '阅卷室', short: '阅卷室', cost: 1200, upkeep: 22, job: 'grader', color: '#ece2f8', multi: true, zone: 'B', desc: '人工批阅并签字，最早次营业日发布。' },
+  tutoring: { name: '一对一私教短训室', short: '私教室', cost: 1300, upkeep: 22, job: 'tutor', color: '#fff0b8', multi: true, zone: 'C', desc: '自愿预约的每日一对一课程。' },
+  counsel: { name: '心理辅导室', short: '心理辅导', cost: 900, upkeep: 16, job: 'counselor', color: '#fbe0ee', multi: false, zone: 'C', desc: '自愿、保密的压力支持。' },
+  report: { name: '资格汇总与上报处', short: '汇总上报', cost: 1000, upkeep: 18, job: 'reporter', color: '#d6f0e8', multi: false, zone: 'D', desc: '七项认证齐全后汇总上报，由上级电子签发。' },
+  pod: { name: '生命修复舱服务室', short: '修复舱', cost: 2600, upkeep: 40, job: 'medic', color: '#c9f2ef', multi: true, zone: 'D', desc: '仅服务已激活维护名额者。' },
+  liaison: { name: '政务联络与证照档案室', short: '政务联络处', cost: 1100, upkeep: 18, job: 'liaison', color: '#e8e2d2', multi: false, zone: 'D', desc: '保管证照、外联跑证、关系维护（仅临时工）。' },
+  petition: { name: '资格复议与心理祈愿室', short: '续考祈愿室', cost: 800, upkeep: 10, job: '', color: '#ecd9f6', multi: false, zone: 'C', desc: '连续落榜者向局长申诉。' },
+  lounge: { name: '员工休息室', short: '休息室', cost: 700, upkeep: 10, job: '', color: '#f3ead9', multi: false, zone: 'D', desc: '员工错峰休息。' },
+};
+D.ROOM_ORDER = ['reception', 'review', 'cashier', 'bookstore', 'written', 'practical', 'grading', 'tutoring', 'counsel', 'petition', 'report', 'pod', 'liaison', 'lounge'];
+
+D.JOBS = {
+  receptionist: { name: '接待员', room: 'reception', wage: 78, color: '#3fae93' },
+  reviewer: { name: '材料审核员', room: 'review', wage: 82, color: '#4a90c2' },
+  cashier: { name: '收费员', room: 'cashier', wage: 80, color: '#e39a3b' },
+  clerk: { name: '书店店员', room: 'bookstore', wage: 72, color: '#e9795d' },
+  proctor: { name: '监考员', room: 'written', wage: 86, color: '#5b7fd1' },
+  examiner: { name: '实操考评员', room: 'practical', wage: 88, color: '#7da53a' },
+  grader: { name: '阅卷员', room: 'grading', wage: 90, color: '#8a6cc4' },
+  reporter: { name: '上报专员', room: 'report', wage: 84, color: '#2f9e8a' },
+  tutor: { name: '私教导师', room: 'tutoring', wage: 92, color: '#c9a227' },
+  counselor: { name: '心理辅导师', room: 'counsel', wage: 90, color: '#d277a6' },
+  medic: { name: '医护员', room: 'pod', wage: 96, color: '#34b3b3' },
+  inspector: { name: '巡查员', room: '', wage: 98, temp: true, skill: 'inspect', color: '#2f6fe0' },
+  liaison: { name: '外联跑证员', room: 'liaison', wage: 90, temp: true, skill: 'liaison', color: '#8d7a55' },
+  relations: { name: '政务关系维护员', room: 'liaison', wage: 95, temp: true, skill: 'relate', color: '#a0683f' },
+};
+D.DUTIES = {
+  gate: { name: '大门收费稽核', desc: '在出口线内拦下未结清者，当场结算；不追缴已离场欠款。' },
+  exam: { name: '考场纪律巡查', desc: '巡视笔试厅/实操室，发现小抄与代答。' },
+  integrity: { name: '员工廉洁巡查', desc: '巡视收费、审核窗口与休息室，查处真实发生的红包。' },
+  roam: { name: '全馆机动巡查', desc: '全类别低强度覆盖，各专项发现率最低。' },
+};
+
+D.POLICIES = [
+  { key: 'oldEd', name: '旧版教材互认', goal: '减少浪费、稳定考生预期', effect: '旧版库存可明示折价（6折）售出并正常计入备考；信任缓升', cost: '新版教材销量下降', satire: '出版部门来函：请解释本季度销售额下滑原因。' },
+  { key: 'freeConsult', name: '免费咨询试点', goal: '降低补件负担', effect: '缺件个性化指导不再收 18；信任缓升', cost: '咨询收入归零', satire: '财务处新增《免费服务成本说明表》，需每日填报。' },
+  { key: 'aiGrading', name: 'AI 辅助阅卷', goal: '减少阅卷积压', effect: '阅卷速度 ×1.8（仍需阅卷员在岗签字）', cost: '每营业日授权费 30', satire: 'AI 已判完全部试卷，状态：正确，但未生效——等待人工签字。' },
+  { key: 'expRecog', name: '职业经验实操互认', goal: '已证明能力者不重复初级实操', effect: '有已验证对口资历的考生笔试合格后，实操按等效认定完成', cost: '实操报名收入与工位利用率下降', satire: '上级通知：请说明本月实操考核人次下降原因。' },
+  { key: 'alienEquiv', name: '跨文明等效与物种适配', goal: '不因设备与礼制模板不适配而判失败', effect: '取消外星考生在深空/礼制/安全实操上的适配性扣分；信任缓升', cost: '一次性适配设备 600', satire: '公平试点成功，预算表仍只统计原式安全帽数量。', once: 600 },
+  { key: 'eDocs', name: '电子材料互认', goal: '减少纸质材料往返', effect: '缺件概率减半', cost: '每营业日系统维护 10', satire: '新增要求：请提交《电子材料真实性证明》（纸质）。' },
+];
+
+D.DOCS = ['《现存生命状态佐证函》', '《无效证明有效性复核页》', '《跨物种姓名字段映射附表》', '《本人仍为本人声明书》', '《未来贡献意向预登记回执》', '《证明材料格式一致性说明》'];
+
+D.SURNAMES = '王李张刘陈杨黄赵吴周徐孙马朱胡郭何高林罗郑梁谢宋唐许韩冯邓曹彭曾萧田董袁潘于蒋蔡余杜叶程苏魏吕丁任沈姚卢姜崔钟谭陆汪范金石廖贾夏韦付方白邹孟熊秦邱江尹薛闫段雷侯龙史陶黎贺顾毛郝龚邵万钱严覃武戴莫孔向汤'.split('');
+D.GIVEN = ['小明', '望生', '顺达', '淑芬', '建国', '美兰', '志远', '晓雯', '德福', '桂英', '一鸣', '思齐', '国栋', '秀珍', '嘉怡', '子轩', '永年', '长庚', '延龄', '松柏', '念慈', '守拙', '知行', '可欣', '立冬', '春来', '佩瑶', '怀仁', '景行', '若愚', '安澜', '静好', '乐天', '问渠', '有为', '慕白', '清和', '书恒', '明哲', '海宁', '雨桐', '云舒', '启明', '天佑', '鹤年', '万里', '如松', '惠敏', '少华', '宝根'];
+D.ALIEN_NAMES = ['索罗·恩', '伊缇尔', '洛珈', '阿克-7·维', '苏尔玛', '提欧·岚', '珂珞丝', '努·阿莱', '祖恩三号体', '帕拉·希', '维瑟琳', '厄尔多', '塔-乌·米', '西格玛·荧', '诺瓦黎', '卡隆·西', '缇娅·沃', '多伦集体·乙', '艾瑟·昆', '莫比·渊'];
+
+D.TEMPLATES = [
+  { key: 'office', w: 24, label: '普通上班族', age: [26, 48], jobs: ['行政专员', '会计', '客服主管', '物流调度'], bias: { discipline: 8 }, apt: { C07: 8, C04: 6 }, hand: 0, fin: 0,
+    bg: ['白天上班，晚上背考纲，周末排队。', '想在孩子成年前把手续办完。'] },
+  { key: 'elder', w: 18, label: '退休长者', age: [62, 88], jobs: ['退休教师', '退休钳工', '退休护士', '退休司机'], bias: { resilience: 6, iq: -4, principle: 8 }, apt: { C01: 4, C07: 4 }, hand: -8, fin: 5,
+    bg: ['会写火箭喷嘴公式，但手不够稳。', '照顾了一辈子家人，贡献证明却开不出来。'] },
+  { key: 'engineer', w: 12, label: '工程技术人员', age: [28, 55], jobs: ['设备维修工程师', '结构工程师', '电气技师'], bias: { iq: 8 }, apt: { C03: 12, C06: 8 }, hand: 14, fin: -5, exp: ['C03'], expP: 0.4,
+    bg: ['修了二十年设备，第一次被要求先宣读开工话术。', '觉得三颗螺丝不是问题，记录表才是。'] },
+  { key: 'student', w: 12, label: '应届青年', age: [19, 25], jobs: ['应届毕业生', '实习生', '外卖骑手'], bias: { iq: 4, discipline: -6, courage: 6 }, apt: { C02: 6 }, hand: 2, fin: 15,
+    bg: ['刚考完一轮学历证书，发现永生还得再考七门。', '钱不多，时间多。'] },
+  { key: 'care', w: 10, label: '照护与服务从业者', age: [30, 58], jobs: ['护工', '社区护士', '家政员'], bias: { eq: 12, social: 6 }, apt: { C01: 10, C05: 6 }, hand: 4, fin: 8,
+    bg: ['真的会用修复舱，但缺少学分。', '下班后才有时间来窗口。'] },
+  { key: 'free', w: 8, label: '自由职业者', age: [24, 50], jobs: ['自由撰稿人', '小店店主', '网约车司机'], bias: { courage: 8, principle: -8, greed: 8 }, apt: { C04: 6 }, hand: 0, fin: 12,
+    bg: ['收入不稳定，对每一笔收费都很敏感。', '相信办法总比手续多。'] },
+  { key: 'a_eng', w: 6, alien: true, label: '远航文明技术公民', age: [120, 320], jobs: ['星际推进系统总工程师', '曲率引擎装调师'], bias: { iq: 16 }, apt: { C03: 25, C06: 10 }, hand: 10, fin: -10, exp: ['C03'], expP: 1,
+    bg: ['设计过十二型跨恒星引擎，不认识地球标准扳手。', '无法证明资历符合“三颗螺丝操作标准”的记录格式。'] },
+  { key: 'a_dip', w: 5, alien: true, label: '银河公约外交人员', age: [90, 260], jobs: ['星际公约谈判代表', '多文明调停官'], bias: { eq: 20, social: 14 }, apt: { C05: 25, C02: 8 }, hand: 0, fin: -10, exp: ['C05'], expP: 1,
+    bg: ['调停过星系冲突，却要先学会正确称呼主任。', '翻译机器人坚持宣读“双方友好合作取得圆满成功”。'] },
+  { key: 'a_sil', w: 5, alien: true, label: '硅基维护专家', age: [200, 900], jobs: ['生命级能量屏障维护师'], bias: { discipline: 14, resilience: 10 }, apt: { C06: 22, C01: 10 }, hand: 6, fin: -5, exp: ['C06'], expP: 1,
+    bg: ['拥有硬质头甲，仍被要求扣好安全帽带。', '证件照尺寸只支持人类头型。'] },
+];
+D.MOTIVES = ['想在退休前取得维护资格', '家人已经考完，不想掉队', '单位要求员工具备长期适任证明', '担心政策再变，先考为敬', '听说名额越来越少', '只是想合法地按下那个自动修复按钮'];
+
+D.BROADCASTS = [
+  '广播：本中心严禁任何形式的私下收款，违规收入一律由中心统一收取。',
+  '广播：考试诚信是永生的第一课。',
+  '广播：请已合格公民耐心等待上级系统电子回执，回执不代表名额。',
+  '广播：官方数字考纲常年免费公开，购买教材纯属自愿。',
+  '广播：热烈欢迎各星系高级人才。为体现公平，请先完成地球居民接待礼仪标准化培训。',
+  '广播：每次真实业务到访收取基础办理费 8，同日只收一次，收费标准已在大厅公示。',
+  '广播：成绩已发布不等于本人已知悉，请携带本人前来查分。',
+  '广播：AI 已核实全部条件，状态为“正确，但未生效”，请等待人工盖章。',
+  '广播：永久资格有效；本年度使用授权待确认。',
+  '广播：让无限的生命，拥有可核验的价值。',
+];
+D.EDITION_JOKES = [
+  '《五年永考·三年模拟》新增“本版无新增考点”共 80 页，采购委员会仍按页数结算。',
+  '《深空工程》新版将“顺时针”改为“沿钟表指针方向”，教材页数增加 80 页。',
+  '《考纲差异与合规要点》指出：两版只有一个标点变化。',
+  '出版委员会为免费的 AI 错题分析设立“AI 教辅合规备案课”。',
+];
+
+D.CATS = {
+  reg: '建档登记', visit: '到访基础办理费', written: '笔试报名费', practical: '实操报名费', consult: '缺件个性化咨询', tutor: '一对一私教',
+  counsel: '心理辅导', report: '档案核验上报', pod: '修复舱服务', book: '书店销售', special: '特别申诉服务费',
+  grant: '政府服务定额拨款', fine: '作弊罚款（罚没）', confiscate: '红包没收（罚没）',
+  wage: '员工工资', upkeep: '房间维护', stock: '教材采购', build: '房间建设', hire: '招聘费', bonus: '员工奖金', podcost: '修复舱耗材能源',
+  policy: '政策运行成本', penalty: '上级整改/罚款', recycle: '旧书回收', refund: '退费',
+};
+D.PERSONAL_CATS = ['reg', 'visit', 'written', 'practical', 'consult', 'tutor', 'counsel', 'report', 'pod', 'book', 'special'];
+D.VISIT_NAMES = {
+  register: '首次登记建档', docs: '补件返访', examW: '参加笔试', examP: '参加实操', check: '返访查分', book: '预约考试',
+  tutor: '一对一私教', counsel: '心理辅导', petition: '续考祈愿', report: '资格汇总上报', pod: '修复舱维护',
+};
+
+// ===== 模拟内核 1：状态、随机数、几何、账本、人物生成、房间与库存 =====
+let S = null;
+const FX = [];
+const IDX = { c: new Map(), s: new Map(), a: new Map(), r: new Map(), p: new Map() };
+
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+function R() {
+  let t = (S.seed = (S.seed + 0x6D2B79F5) | 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+const pick = arr => arr[Math.floor(R() * arr.length)];
+const chance = p => R() < p;
+const gauss = () => (R() + R() + R() + R() - 2) / 0.5774;
+const nid = () => S.nextId++;
+function wpick(items) {
+  let tot = 0;
+  for (const it of items) tot += it.w;
+  let r = R() * tot;
+  for (const it of items) { r -= it.w; if (r <= 0) return it; }
+  return items[items.length - 1];
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"'`]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[ch]));
+}
+function cleanName(s, max) {
+  return String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max);
+}
+
+const C = id => IDX.c.get(id);
+const St = id => IDX.s.get(id);
+const A = id => IDX.a.get(id);
+const Rm = id => IDX.r.get(id);
+const PAPER = id => IDX.p.get(id);
+function reindex() {
+  for (const k in IDX) IDX[k].clear();
+  S.citizens.forEach(c => IDX.c.set(c.id, c));
+  S.staff.forEach(s => IDX.s.set(s.id, s));
+  S.agents.forEach(a => IDX.a.set(a.id, a));
+  S.rooms.forEach(r => IDX.r.set(r.id, r));
+  S.papers.forEach(p => IDX.p.set(p.id, p));
+}
+
+// ---------- 年历 ----------
+function dateOf(day) {
+  return { y: Math.floor((day - 1) / D.YEAR_DAYS) + 1, m: Math.floor(((day - 1) % D.YEAR_DAYS) / D.MONTH_DAYS) + 1, d: ((day - 1) % D.MONTH_DAYS) + 1 };
+}
+function dateStr(day) { const t = dateOf(day); return '第' + t.y + '年' + t.m + '月' + t.d + '日'; }
+function timeStr(min) { const h = Math.floor(min / 60), m = min % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+
+// ---------- 日志与账本 ----------
+function log(text, kind) {
+  S.logSeq++;
+  S.log.push({ n: S.logSeq, d: S.day, m: S.minute, t: text, k: kind || 'info' });
+  if (S.log.length > 240) S.log.splice(0, S.log.length - 240);
+  if (kind === 'ask' || kind === 'key') S.keySeq++;
+}
+function daily(day) {
+  let dd = S.daily[day];
+  if (!dd) dd = S.daily[day] = { inc: {}, exp: {}, due: 0, esc: 0, vis: 0 };
+  return dd;
+}
+function cashMove(cat, amt, label, cid) {
+  amt = Math.round(amt);
+  if (!amt) return;
+  S.cash += amt;
+  S.ledger.push({ d: S.day, m: S.minute, c: cat, a: amt, l: label || '', cid: cid || 0 });
+  const dd = daily(S.day), side = amt >= 0 ? dd.inc : dd.exp;
+  side[cat] = (side[cat] || 0) + amt;
+  S.tot[cat] = (S.tot[cat] || 0) + amt;
+}
+function dayNet(day) {
+  const dd = S.daily[day];
+  if (!dd) return 0;
+  let n = 0;
+  for (const k in dd.inc) n += dd.inc[k];
+  for (const k in dd.exp) n += dd.exp[k];
+  return n;
+}
+function addTrust(v) { S.trust = clamp(S.trust + v, 0, 100); }
+function addComp(v) { S.comp = clamp(S.comp + v, 0, 100); }
+
+// ---------- 单层地图几何 ----------
+const LOT_W = 6, LOT_D = 5, HALL_W = 3, LOT_COLS = 6;
+const ROWS = [{ y: 0, door: 'S', cy: 6 }, { y: 7, door: 'N', cy: 6 }, { y: 14, door: 'N', cy: 13 }];
+const LOT_COUNT = LOT_COLS * ROWS.length;
+const MAP = { w: HALL_W + LOT_COLS * LOT_W, h: 19, hallX: 1.5, gateY: 9.5 };
+const OUTSIDE = { h: 1, x: -1.6, y: 9.5 };
+const SPEED = 2.6;
+function lotGeom(lot) {
+  const row = Math.floor(lot / LOT_COLS), col = lot % LOT_COLS;
+  return { row, col, x: HALL_W + col * LOT_W, y: ROWS[row].y, door: ROWS[row].door, cy: ROWS[row].cy };
+}
+function roomPos(rm, lx, ld) {
+  const g = lotGeom(rm.lot);
+  return { x: g.x + lx, y: g.door === 'S' ? g.y + LOT_D - ld : g.y + ld };
+}
+const doorXY = rm => roomPos(rm, 3, 0);
+function corrXY(rm) { const g = lotGeom(rm.lot); return { x: g.x + 3, y: g.cy }; }
+function placeXY(p) { return p.r ? roomPos(Rm(p.r), p.lx, p.ld) : { x: p.x, y: p.y }; }
+function route(from, to) {
+  const pts = [];
+  if (from.r && to.r && from.r === to.r) { pts.push(placeXY(to)); return pts; }
+  let cy = null;
+  if (from.r) {
+    const rm = Rm(from.r);
+    if (rm) { const c = corrXY(rm); pts.push(doorXY(rm), c); cy = c.y; }
+  } else if (from.x < 0) pts.push({ x: MAP.hallX, y: MAP.gateY });
+  if (to.r) {
+    const rm = Rm(to.r), c = corrXY(rm);
+    if (cy === null) pts.push({ x: MAP.hallX, y: c.y });
+    else if (cy !== c.y) pts.push({ x: MAP.hallX, y: cy }, { x: MAP.hallX, y: c.y });
+    pts.push(c, doorXY(rm), placeXY(to));
+  } else {
+    if (cy !== null) pts.push({ x: MAP.hallX, y: cy });
+    if (to.x < 0) pts.push({ x: MAP.hallX, y: MAP.gateY });
+    pts.push({ x: to.x, y: to.y });
+  }
+  return pts;
+}
+function setDest(a, place) {
+  a.path = route(a.place, place);
+  a.place = place;
+}
+function stepAgent(a) {
+  a.px = a.x; a.py = a.y;
+  let rem = SPEED;
+  while (rem > 0 && a.path.length) {
+    const p = a.path[0], dx = p.x - a.x, dy = p.y - a.y, dist = Math.hypot(dx, dy);
+    if (dist <= rem) { a.x = p.x; a.y = p.y; a.path.shift(); rem -= dist; }
+    else { a.x += dx / dist * rem; a.y += dy / dist * rem; rem = 0; }
+  }
+}
+function teleport(a, place) {
+  const p = placeXY(place);
+  a.x = a.px = p.x; a.y = a.py = p.y; a.path = []; a.place = place;
+}
+
+const POSTS = {
+  reception: [[1.5, 3.9], [4.5, 3.9]], cashier: [[1.5, 3.9], [4.5, 3.9]], review: [[1.5, 3.9], [4.5, 3.9]], report: [[3, 3.9], [1.2, 3.9]],
+  bookstore: [[4.9, 3.2], [1.2, 3.2]], written: [[3, 4.4], [5.3, 4.4]], practical: [[3, 4.3], [5.3, 4.3]], grading: [[1.6, 3.5], [4.4, 3.5]],
+  tutoring: [[1.6, 3.8], [4.4, 3.8]], counsel: [[3.9, 3.4]], pod: [[4.9, 2.6]], liaison: [[1.6, 3.5], [4.4, 3.5]], petition: [], lounge: [],
+};
+const CUST = {
+  reception: [[1.5, 2.4], [4.5, 2.4]], cashier: [[1.5, 2.4], [4.5, 2.4]], review: [[1.5, 2.4], [4.5, 2.4]], report: [[3, 2.4], [1.2, 2.4]],
+  bookstore: [[4.9, 1.9], [1.2, 1.9]], tutoring: [[1.6, 2.7], [4.4, 2.7]], counsel: [[2.6, 3.4]], pod: [[2.6, 3.5]],
+  petition: [[3, 2.6], [1.6, 2.6], [4.4, 2.6]],
+};
+const SEATS = [[1.2, 1.7], [3, 1.7], [4.8, 1.7], [1.2, 3.1], [3, 3.1], [4.8, 3.1]];
+const STATIONS = [[1.6, 2.6], [4.4, 2.6]];
+const LOUNGE = [[1, 3.8], [2, 3.8], [3, 3.8], [4, 3.8], [5, 3.8], [1.2, 2.2], [4.8, 2.2], [3, 2.2]];
+const SERVICE_ROOMS = { reception: 1, cashier: 1, review: 1, report: 1, bookstore: 1, tutoring: 1, counsel: 1, pod: 1 };
+function qPlace(rm, k) {
+  return { r: rm.id, lx: 0.6 + (k % 6) * 0.95, ld: k < 6 ? 0.9 : 0.35 };
+}
+
+// ---------- 房间 ----------
+const roomsOf = type => S.rooms.filter(r => r.type === type);
+const hasRoom = type => S.rooms.some(r => r.type === type);
+const staffIn = rm => S.staff.filter(s => s.room === rm.id);
+const present = s => s.st === 'post';
+function staffed(type) {
+  return S.rooms.some(r => r.type === type && S.staff.some(s => s.room === r.id && s.st !== 'away' && s.st !== 'leave'));
+}
+function addRoom(type, lot) {
+  const rm = { id: nid(), type, lot, q: [], built: S.day };
+  S.rooms.push(rm); IDX.r.set(rm.id, rm);
+  return rm;
+}
+function lotFree(lot) { return lot >= 0 && lot < LOT_COUNT && !S.rooms.some(r => r.lot === lot); }
+function buildRoom(type, lot) {
+  const def = D.ROOMS[type];
+  if (!def) return { ok: false, msg: '未知房间类型' };
+  if (!lotFree(lot)) return { ok: false, msg: '该地块已被占用' };
+  if (!def.multi && hasRoom(type)) return { ok: false, msg: def.name + ' 只能建一间' };
+  if (S.cash < def.cost) return { ok: false, msg: '现金不足，需要 ' + def.cost };
+  cashMove('build', -def.cost, '建设 ' + def.name);
+  const rm = addRoom(type, lot);
+  log('🏗 建成「' + def.name + '」。' + (def.job ? '请在【员工排班】为其配备' + D.JOBS[def.job].name + '。' : ''), 'good');
+  FX.push('build');
+  return { ok: true, room: rm };
+}
+
+// ---------- 人物生成 ----------
+const TRAITS = ['iq', 'eq', 'discipline', 'greed', 'courage', 'principle', 'resilience', 'social'];
+const TRAIT_NAMES = { iq: '智力', eq: '情商', discipline: '自律', greed: '贪欲', courage: '胆量', principle: '原则性', resilience: '抗压', social: '社交' };
+function makePerson(tplKey) {
+  const tpl = tplKey ? D.TEMPLATES.find(t => t.key === tplKey) : wpick(D.TEMPLATES);
+  const tr = {};
+  for (const k of TRAITS) tr[k] = clamp(Math.round(52 + gauss() * 17 + ((tpl.bias && tpl.bias[k]) || 0)), 3, 98);
+  const alien = !!tpl.alien;
+  const fin = clamp(Math.round(45 + gauss() * 20 + (tpl.fin || 0)), 0, 100);
+  const p = {
+    name: alien ? pick(D.ALIEN_NAMES) : pick(D.SURNAMES) + pick(D.GIVEN),
+    age: ri(tpl.age[0], tpl.age[1]), species: alien ? 'alien' : 'human', tpl: tpl.key, tplLabel: tpl.label,
+    job: pick(tpl.jobs), bg: pick(tpl.bg), tr, fin,
+    skills: {
+      inspect: clamp(Math.round(tr.discipline * 0.45 + tr.courage * 0.3 + tr.principle * 0.25 + gauss() * 8), 5, 99),
+      liaison: clamp(Math.round(tr.social * 0.5 + tr.discipline * 0.3 + tr.eq * 0.2 + gauss() * 8), 5, 99),
+      relate: clamp(Math.round(tr.eq * 0.55 + tr.social * 0.45 + gauss() * 8), 5, 99),
+    },
+    hue: ri(0, 359),
+  };
+  p.expect = clamp(Math.round(70 + tr.iq * 0.15 + (100 - fin) * 0.25 + gauss() * 8), 55, 130);
+  return p;
+}
+function newCitizen(tplKey) {
+  const p = makePerson(tplKey), tpl = D.TEMPLATES.find(t => t.key === p.tpl);
+  const c = Object.assign(p, {
+    id: nid(), motive: pick(D.MOTIVES), aptW: {}, aptP: {}, prep: {}, rec: {}, mid: ['C03', 'C04', 'C05'],
+    stress: clamp(Math.round(22 + gauss() * 10), 0, 100), patience: clamp(Math.round(62 + gauss() * 14 + (p.tr.resilience - 50) * 0.2), 20, 100),
+    relation: 50, exp: [], status: 'home', plan: null, agent: 0, spawn: 0,
+    registered: false, docs: { n: 0, pending: false, ok: false, name: '' }, booking: null, paper: 0, prepaid: false,
+    study: null, tutorLeft: 0, strategy: '', examBonus: 0, books: {}, wantBook: null,
+    reported: 0, license: false, licDay: 0, slot: 'none', slotDay: 0, pods: 0, annual: null,
+    inv: [], beh: [], visitN: 0, firstDay: 0, lastVisit: 0, feeDay: 0, consultDay: 0, encDay: 0, lastCheck: 0, askDay: 0, staff: 0, note: '',
+  });
+  for (let i = c.mid.length - 1; i > 0; i--) { const j = ri(0, i); const t = c.mid[i]; c.mid[i] = c.mid[j]; c.mid[j] = t; }
+  for (const co of D.COURSES) {
+    const b = (tpl.apt && tpl.apt[co.id]) || 0;
+    c.aptW[co.id] = clamp(Math.round(c.tr.iq * 0.7 + c.tr.discipline * 0.2 + 8 + b + gauss() * 7), 5, 99);
+    c.aptP[co.id] = clamp(Math.round(c.tr.iq * 0.3 + c.tr.discipline * 0.3 + 26 + (tpl.hand || 0) + b * 0.6 + gauss() * 8), 5, 99);
+    c.prep[co.id] = clamp(Math.round(24 + c.tr.discipline * 0.22 + gauss() * 7), 5, 60);
+    c.rec[co.id] = { w: 'none', p: 'none', wScore: null, pScore: null, wFails: 0, pFails: 0, wTries: 0, pTries: 0, wEx: null, pEx: null, cert: false, certDay: 0, pet: false, hist: [] };
+  }
+  if (tpl.exp && chance(tpl.expP || 0)) c.exp = tpl.exp.slice();
+  S.citizens.push(c); IDX.c.set(c.id, c);
+  return c;
+}
+function beh(c, action, text, opt) {
+  const h = { d: S.day, m: S.minute, a: action, t: text };
+  if (opt && opt.hid) h.hid = true;
+  if (opt && opt.inv) h.inv = opt.inv;
+  c.beh.push(h);
+}
+
+// ---------- 个人账本 ----------
+function invoice(c, item, cat, due, cost, room) {
+  if (!(due > 0)) return null;
+  const v = { id: nid(), d: S.day, m: S.minute, item, cat, due: Math.round(due), paid: 0, st: 'open', cost: cost || 0, room: room || '', vis: c.visitN };
+  c.inv.push(v);
+  daily(S.day).due += v.due;
+  return v;
+}
+function payInv(c, v, method) {
+  if (!v || v.st !== 'open') return 0;
+  v.st = 'paid'; v.paid = v.due; v.pd = S.day; v.pm = S.minute; v.how = method || '收费室';
+  cashMove(v.cat, v.due, v.item, c.id);
+  if (v.cat === 'written' || v.cat === 'practical') {
+    S.stats.examFees += v.due;
+    if (!S.stats.payers[c.id]) { S.stats.payers[c.id] = 1; S.stats.payerCount++; }
+  }
+  if (v.cat === 'consult') S.stats.consult += v.due;
+  return v.due;
+}
+const openInvs = c => c.inv.filter(v => v.st === 'open');
+function markEscaped(c, v, why) {
+  if (v.st !== 'open') return;
+  v.st = 'esc'; v.note = why || '';
+  S.stats.escaped++; S.stats.escapedAmt += v.due; daily(S.day).esc += v.due;
+}
+function totals(c) {
+  const t = { due: 0, paid: 0, refund: 0, net: 0, unpaid: 0, cost: 0, gross: 0, est: 0, byCat: {} };
+  for (const v of c.inv) {
+    t.due += v.due; t.paid += v.paid; t.refund += v.refund || 0;
+    if (v.st === 'esc' || v.st === 'open') t.unpaid += v.due - v.paid;
+    if (v.st === 'paid' || v.st === 'esc') t.cost += v.cost;
+    t.byCat[v.cat] = (t.byCat[v.cat] || 0) + v.paid;
+  }
+  t.net = t.paid - t.refund;
+  t.gross = t.net - t.cost;
+  const perVisit = S.stats.visits ? Math.round(S.stats.overhead / S.stats.visits) : 0;
+  t.share = perVisit * c.visitN;
+  t.est = t.gross - t.share;
+  return t;
+}
+
+// ---------- 书店库存 ----------
+function bookAllowed(sku) {
+  const b = D.BOOKS[sku];
+  return !!b && (!b.course || D.COURSE[b.course].level <= S.level);
+}
+function buyStock(sku, n) {
+  const b = D.BOOKS[sku];
+  n = Math.floor(n);
+  if (!b || !(n > 0)) return { ok: false, msg: '无效的进货请求' };
+  if (!hasRoom('bookstore')) return { ok: false, msg: '尚未建成书店' };
+  if (!bookAllowed(sku)) return { ok: false, msg: '机构等级不足，未获该教材发行授权' };
+  const cost = b.cost * n;
+  if (S.cash < cost) return { ok: false, msg: '现金不足，需要 ' + cost };
+  cashMove('stock', -cost, '进货 ' + b.name + ' ×' + n);
+  S.stock[sku] = (S.stock[sku] || 0) + n;
+  S.stockCost[sku] = (S.stockCost[sku] || 0) + cost;
+  FX.push('cash');
+  return { ok: true };
+}
+function recycleOld(sku) {
+  const n = S.old[sku] || 0, b = D.BOOKS[sku];
+  if (!n || !b) return { ok: false, msg: '没有可回收的旧版库存' };
+  const back = Math.floor(b.cost * 0.2) * n;
+  S.old[sku] = 0;
+  cashMove('recycle', back, '回收旧版 ' + b.name + ' ×' + n);
+  log('♻️ 回收旧版' + b.name + ' ' + n + ' 本，回款 ' + back + '。', 'info');
+  return { ok: true, back };
+}
+
+// ===== 模拟内核 2：学籍、到访状态机、考试预约/开考/阅卷/发布、查分与复习抉择 =====
+const courseOrder = c => ['C01', 'C02'].concat(c.mid, ['C06', 'C07']);
+const wDone = rec => rec.w === 'pass' || !!rec.wEx;
+const pDone = rec => rec.p === 'pass' || rec.p === 'equiv' || !!rec.pEx;
+function curCourse(c) {
+  for (const id of courseOrder(c)) if (!c.rec[id].cert) return id;
+  return null;
+}
+function nextExam(c) {
+  const id = curCourse(c);
+  if (!id) return null;
+  const r = c.rec[id];
+  if (!wDone(r)) return { course: id, kind: 'w' };
+  if (!pDone(r)) return { course: id, kind: 'p' };
+  return null;
+}
+function canEnroll(c, course, kind) {
+  const ne = nextExam(c);
+  if (!ne || ne.course !== course) return false;
+  if (kind && ne.kind !== kind) return false;
+  return D.COURSE[course].level <= S.level;
+}
+const certCount = c => D.COURSES.reduce((n, co) => n + (c.rec[co.id].cert ? 1 : 0), 0);
+function reorderMid(cid, course, dir) {
+  const c = C(cid);
+  if (!c) return false;
+  const i = c.mid.indexOf(course), j = i + dir;
+  if (i < 0 || j < 0 || j >= c.mid.length) return false;
+  const free = id => { const r = c.rec[id]; return r.w === 'none' && r.p === 'none' && !r.cert && !r.wEx && !r.pEx; };
+  if (!free(c.mid[i]) || !free(c.mid[j])) return false;
+  const t = c.mid[i]; c.mid[i] = c.mid[j]; c.mid[j] = t;
+  beh(c, '调整顺序', '局长调整中段三科报考顺序：' + c.mid.map(x => D.COURSE[x].short).join(' → '));
+  return true;
+}
+
+// ---------- 成绩模型与“估计通过率” ----------
+const EXAM_SD = 8;
+function examMean(c, course, kind) {
+  const co = D.COURSE[course];
+  const apt = kind === 'w' ? c.aptW[course] : c.aptP[course];
+  let m = 37 + 0.3 * apt + 0.34 * (c.prep[course] || 0) - 0.12 * c.stress - co.diff;
+  if (kind === 'p') m += 4;
+  if (kind === 'p' && c.species === 'alien' && co.alienPen && !S.policies.alienEquiv) m -= co.alienPen;
+  return m + (c.examBonus || 0);
+}
+function phi(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z)), d = 0.3989423 * Math.exp(-z * z / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+function estPass(c, course, kind) {
+  const co = D.COURSE[course], line = kind === 'w' ? co.wLine : co.pLine;
+  const p = 1 - phi((line - 0.5 - examMean(c, course, kind)) / EXAM_SD);
+  return clamp(Math.round(p * 20) * 5, 5, 95);
+}
+function studyRate(c) { return clamp(Math.round(3 + c.tr.discipline / 22), 3, 8); }
+
+// 面向界面的学籍视图：未经本人查分的成绩绝不出现在返回值中
+function examView(c, course) {
+  const rec = c.rec[course], co = D.COURSE[course];
+  const one = kind => {
+    const stt = rec[kind], ex = kind === 'w' ? rec.wEx : rec.pEx, score = kind === 'w' ? rec.wScore : rec.pScore;
+    const paper = c.paper ? PAPER(c.paper) : null;
+    const pend = paper && paper.course === course && paper.kind === kind ? paper : null;
+    let text = '未报考', cls = '';
+    if (ex) { text = '免考凭证（' + dateStr(ex.day) + ' · ' + ex.by + '签发）'; cls = 'ex'; }
+    else if (stt === 'equiv') { text = '经验等效认定'; cls = 'ok'; }
+    else if (stt === 'pass') { text = '实考合格 ' + score + ' 分'; cls = 'ok'; }
+    else if (pend) { text = pend.pub ? '成绩已发布，本人未查询' : (pend.mk ? '已阅卷封存，待发布' : '封存 / 待批'); cls = 'seal'; }
+    else if (stt === 'booked' && c.booking) { text = '已预约 ' + dateStr(c.booking.day) + ' ' + timeStr(c.booking.kind === 'w' ? D.W_SLOTS[c.booking.slot] : D.P_SLOTS[c.booking.slot]); cls = 'bk'; }
+    else if (stt === 'fail') { text = '未通过（最近 ' + (score == null ? '—' : score) + ' 分）'; cls = 'bad'; }
+    return { text, cls, fails: kind === 'w' ? rec.wFails : rec.pFails, line: kind === 'w' ? co.wLine : co.pLine, done: kind === 'w' ? wDone(rec) : pDone(rec) };
+  };
+  return { w: one('w'), p: one('p'), cert: rec.cert, certDay: rec.certDay };
+}
+
+// ---------- 预约 ----------
+// 只向已排班考务人员的考场放号，避免把考生约进注定取消的场次
+const hasExamStaff = rm => S.staff.some(s => s.room === rm.id);
+function findWritten(course, fromDay) {
+  const halls = roomsOf('written').filter(hasExamStaff);
+  for (let d = fromDay; d < fromDay + 40; d++) for (let s = 0; s < D.W_SLOTS.length; s++) for (const rm of halls) {
+    const key = 'w' + d + ':' + s + ':' + rm.id;
+    let ses = S.sessions[key];
+    if (ses && (ses.st !== 'open' || ses.course !== course || ses.cids.length >= D.W_SEATS)) continue;
+    if (!ses) ses = S.sessions[key] = { key, kind: 'w', day: d, slot: s, room: rm.id, course, cids: [], att: [], st: 'open', t0: 0 };
+    return ses;
+  }
+  return null;
+}
+function findPractical(fromDay) {
+  const rooms = roomsOf('practical').filter(hasExamStaff);
+  for (let d = fromDay; d < fromDay + 40; d++) for (let s = 0; s < D.P_SLOTS.length; s++) for (const rm of rooms) {
+    const key = 'p' + d + ':' + s + ':' + rm.id;
+    let ses = S.sessions[key];
+    if (ses && (ses.st !== 'open' || ses.cids.length >= D.P_STATIONS)) continue;
+    if (!ses) ses = S.sessions[key] = { key, kind: 'p', day: d, slot: s, room: rm.id, course: '', cids: [], att: [], st: 'open', t0: 0 };
+    return ses;
+  }
+  return null;
+}
+// 预约至少提前一个营业日；一个人同一时间只持有一个预约
+function reserve(c, course, kind) {
+  if (c.booking) return null;
+  const ses = kind === 'w' ? findWritten(course, S.day + 1) : findPractical(S.day + 1);
+  if (!ses) return null;
+  ses.cids.push(c.id);
+  c.booking = { kind, course, day: ses.day, slot: ses.slot, room: ses.room, key: ses.key };
+  c.rec[course][kind] = 'booked';
+  return c.booking;
+}
+function bookExam(c) {
+  const ne = nextExam(c);
+  if (!ne || c.booking || c.paper) return false;
+  const co = D.COURSE[ne.course];
+  if (co.level > S.level) { beh(c, '等待资质', '本中心尚无「' + co.short + '」考试授权，回家等待中心升级'); return false; }
+  const bk = reserve(c, ne.course, ne.kind);
+  if (!bk) {
+    beh(c, '预约失败', '中心暂无可放号的' + (ne.kind === 'w' ? '笔试厅' : '实操室') + '（需已排班考务人员），未收费');
+    log('⚠️ ' + c.name + ' 无法预约' + (ne.kind === 'w' ? '笔试：没有已排班监考员的笔试厅' : '实操：没有已排班考评员的实操室') + '。', 'bad');
+    return false;
+  }
+  const rec = c.rec[ne.course], nth = (ne.kind === 'w' ? rec.wTries : rec.pTries) + 1;
+  if (c.prepaid) c.prepaid = false;
+  else invoice(c, co.short + '·' + (ne.kind === 'w' ? '笔试' : '实操') + '普通报名费（第' + nth + '次，统一标准价）', ne.kind === 'w' ? 'written' : 'practical', ne.kind === 'w' ? D.FEES.written : D.FEES.practical, D.COSTS.paper, 'cashier');
+  beh(c, '预约', '预约「' + co.short + '」' + (ne.kind === 'w' ? '笔试' : '实操') + '：' + dateStr(bk.day) + ' ' + timeStr(ne.kind === 'w' ? D.W_SLOTS[bk.slot] : D.P_SLOTS[bk.slot]));
+  return true;
+}
+
+// ---------- 到访收费 ----------
+function visitFee(c, room) {
+  if (c.feeDay === S.day) return null;
+  c.feeDay = S.day;
+  return invoice(c, '到访基础办理服务费', 'visit', D.FEES.visit, 0, room);
+}
+function consultFee(c) {
+  if (c.consultDay === S.day) return null;
+  c.consultDay = S.day;
+  if (S.policies.freeConsult) { beh(c, '咨询', '缺件个性化指导（免费咨询试点，未收费）'); return null; }
+  const v = invoice(c, '缺件个性化咨询服务', 'consult', D.FEES.consult, 0, 'review');
+  beh(c, '咨询', '接受缺件个性化咨询，应缴 ' + D.FEES.consult, { inv: v.id });
+  return v;
+}
+function isEvader(c) { return c.tr.greed > 55 && c.tr.principle < 48 && (c.fin > 55 || c.tr.courage > 62); }
+
+// ---------- 到访生成 ----------
+const STEP = {
+  reg: { rt: 'reception', dur: 8 }, check: { rt: 'reception', dur: 6 }, review: { rt: 'review', dur: 10 }, cashier: { rt: 'cashier', dur: 5 },
+  bookstore: { rt: 'bookstore', dur: 6, opt: 30 }, tutor: { rt: 'tutoring', dur: 45 }, counsel: { rt: 'counsel', dur: 30, opt: 60 },
+  report: { rt: 'report', dur: 10 }, pod: { rt: 'pod', dur: 40 }, petition: { rt: 'petition' },
+};
+function stepsFor(c, type, a) {
+  switch (type) {
+    case 'register': return ['reg', 'review', 'cashier'];
+    case 'docs': return ['review', 'cashier'];
+    case 'examW': return ['examW'];
+    case 'examP': return ['examP'];
+    case 'check': return ['check'];
+    case 'book': a.book = true; if (c.wantBook) { a.buy = c.wantBook; c.wantBook = null; return ['bookstore', 'cashier']; } return ['cashier'];
+    default: return [type];
+  }
+}
+function spawnCitizen(c) {
+  const type = c.plan.type;
+  const a = { id: nid(), k: 'cit', cid: c.id, x: OUTSIDE.x, y: OUTSIDE.y, px: OUTSIDE.x, py: OUTSIDE.y, path: [], place: OUTSIDE, st: 'idle', steps: [], si: -1,
+    room: 0, staff: 0, wait: 0, tw: 0, svc: 0, evade: false, book: false, buy: null, type, bub: '', paid: false, gated: false };
+  a.steps = stepsFor(c, type, a);
+  a.evade = isEvader(c) && chance(0.6);
+  c.plan = null; c.status = 'visit'; c.agent = a.id; c.visitN++; c.lastVisit = S.day; c.note = '';
+  if (!c.firstDay) c.firstDay = S.day;
+  if (c.paused) { c.paused = false; c.patience = Math.max(c.patience, 42); }
+  S.stats.visits++; daily(S.day).vis++;
+  S.agents.push(a); IDX.a.set(a.id, a);
+  beh(c, '到访', '到访中心：' + D.VISIT_NAMES[type]);
+  nextStep(a);
+}
+function pickRoom(type) {
+  let best = null, bs = 1e9;
+  for (const rm of S.rooms) {
+    if (rm.type !== type) continue;
+    const sc = rm.q.length - (S.staff.some(s => s.room === rm.id && present(s)) ? 0.5 : 0);
+    if (sc < bs) { bs = sc; best = rm; }
+  }
+  return best;
+}
+function nextStep(a) {
+  const c = C(a.cid);
+  a.si++; a.svc = 0; a.wait = 0; a.staff = 0; a.bub = '';
+  if (a.si >= a.steps.length) {
+    if (openInvs(c).length && !a.evade && !a.paid) { a.paid = true; a.steps.push('cashier'); }
+    else return leave(a);
+  }
+  const step = a.steps[a.si];
+  if (step === 'examW' || step === 'examP') return goExam(a, c);
+  const rm = pickRoom(STEP[step].rt);
+  if (!rm) { onNoRoom(c, step); return nextStep(a); }
+  a.room = rm.id; a.st = 'walk';
+  setDest(a, { r: rm.id, lx: 3, ld: 0.5 });
+}
+function onNoRoom(c, step) {
+  if (step === 'tutor') { c.tutorLeft = 0; beh(c, '私教取消', '中心没有私教室，改为居家免费复习'); c.study = { until: S.day + 2, rate: studyRate(c) }; }
+  else if (step === 'report') beh(c, '上报未果', '中心尚未建成资格汇总与上报处');
+  else if (step === 'pod') beh(c, '维护未果', '中心尚无修复舱');
+}
+function goExam(a, c) {
+  const bk = c.booking, ses = bk && S.sessions[bk.key];
+  if (!bk || bk.day !== S.day || !ses || ses.st === 'done' || ses.st === 'cancel' || !Rm(bk.room)) return nextStep(a);
+  const i = ses.cids.indexOf(c.id), spot = bk.kind === 'w' ? SEATS[i] : STATIONS[i];
+  a.room = bk.room; a.st = 'toSeat'; a.bub = '🪪';
+  setDest(a, { r: bk.room, lx: spot[0], ld: spot[1] });
+}
+function requeue(rm) {
+  rm.q.forEach((aid, k) => {
+    const a = A(aid);
+    if (a && a.st === 'q') setDest(a, qPlace(rm, k));
+  });
+}
+function dropFromQueue(a) {
+  const rm = Rm(a.room);
+  if (!rm) return;
+  const i = rm.q.indexOf(a.id);
+  if (i >= 0) { rm.q.splice(i, 1); requeue(rm); }
+}
+function leave(a) {
+  a.st = 'leave'; a.room = 0; a.bub = '';
+  setDest(a, OUTSIDE);
+}
+function removeAgent(a) {
+  if (a.staff) { const s = St(a.staff); if (s && s.busy === a.id) s.busy = 0; }
+  dropFromQueue(a);
+  const i = S.agents.indexOf(a);
+  if (i >= 0) S.agents.splice(i, 1);
+  IDX.a.delete(a.id);
+}
+
+// ---------- 出口：离场前结算或逃单（成功离场后永不追缴） ----------
+function gateInspector() {
+  for (const s of S.staff) {
+    if (s.job !== 'inspector' || s.duty !== 'gate' || s.st !== 'post') continue;
+    const ag = A(s.agent);
+    if (ag && !ag.off && ag.x < HALL_W + 0.5 && Math.abs(ag.y - MAP.gateY) < 4) return s;
+  }
+  return null;
+}
+function gateWhy() {
+  const ins = S.staff.filter(s => s.job === 'inspector');
+  if (!ins.length) return '本中心没有巡查员';
+  const g = ins.filter(s => s.duty === 'gate');
+  if (!g.length) return '巡查员未被指派大门稽核';
+  if (g.some(s => s.st === 'rest' || s.st === 'toRest' || s.st === 'toPost')) return '守门巡查员休息中';
+  if (g.some(s => s.st === 'leave' || s.st === 'away')) return '守门巡查员今日不在岗';
+  return '守门巡查员未能及时发现';
+}
+function gateCheck(a, c) {
+  a.gated = true;
+  const opens = openInvs(c);
+  if (!opens.length) return;
+  const sum = opens.reduce((n, v) => n + v.due, 0);
+  const s = gateInspector();
+  if (s && chance(0.85)) {
+    for (const v of opens) payInv(c, v, '大门稽核·离场前当场结清');
+    S.stats.intercepted++; s.caught = (s.caught || 0) + 1;
+    beh(c, '当场结清', '离场前被巡查员 ' + s.name + ' 在出口线内拦下，当场结清 ' + sum);
+    log('🛡 ' + s.name + ' 在出口线内拦下 ' + c.name + '，当场结清 ' + sum + '（离场前结算，不是追缴）。', 'good');
+    FX.push('cash');
+    return;
+  }
+  const why = a.evade ? gateWhy() : '收费窗口无人，未能结清';
+  for (const v of opens) markEscaped(c, v, why);
+  a.bub = '💨';
+  beh(c, '逃单离场', '未结清 ' + sum + ' 离场（' + why + '）；已跨过离场线，不追缴');
+  log('💨 ' + c.name + ' 带着未缴 ' + sum + ' 离场（' + why + '）。该欠款只留档，不追缴。', 'bad');
+  FX.push('alert');
+}
+function finalize(a, c) {
+  const dd = daily(S.day);
+  dd.wn = (dd.wn || 0) + 1; dd.ws = (dd.ws || 0) + a.tw;
+  if (a.tw > 60) addTrust(-0.2);
+  removeAgent(a);
+  c.agent = 0;
+  if (c.status === 'visit') c.status = 'home';
+  autoPlan(c);
+}
+
+// ---------- 离馆后的下一步（兜底规划，幂等） ----------
+function autoPlan(c) {
+  if (c.plan || c.agent) return;
+  if (c.status === 'waitLevel') c.status = 'home';
+  c.note = '';
+  if (!c.registered) { c.plan = { type: 'register', day: S.day + 1 }; return; }
+  if (c.docs.pending) { c.plan = { type: 'docs', day: S.day + 2 }; return; }
+  if (!c.docs.ok) { c.plan = { type: 'docs', day: S.day + 1 }; return; }
+  if (c.booking) { c.plan = { type: c.booking.kind === 'w' ? 'examW' : 'examP', day: c.booking.day }; return; }
+  if (c.paper) {
+    const p = PAPER(c.paper);
+    if (p && p.pub) c.plan = { type: 'check', day: Math.max(S.day + 1, p.planned) };
+    else c.note = '等待阅卷与成绩发布';
+    return;
+  }
+  if (c.tutorLeft > 0) { c.plan = { type: 'tutor', day: S.day + 1 }; return; }
+  if (c.license) {
+    if (c.slot === 'active') {
+      if (staffed('pod')) c.plan = { type: 'pod', day: S.day + ri(6, 10) };
+      else c.note = '名额已激活，等待中心开放修复舱';
+    } else c.note = '公开候补生命维护名额';
+    return;
+  }
+  if (c.reported) { c.note = '等待上级系统电子回执'; return; }
+  const ne = nextExam(c);
+  if (!ne) {
+    if (hasRoom('report')) c.plan = { type: 'report', day: S.day + ri(1, 2) };
+    else c.note = '七项认证齐全，等待中心建成资格汇总与上报处';
+    return;
+  }
+  if (D.COURSE[ne.course].level > S.level) { c.status = 'waitLevel'; c.note = '等待中心课程资质（' + D.COURSE[ne.course].short + '）'; return; }
+  if (ne.kind === 'p' && !hasRoom('practical')) { c.note = '等待中心建成实操室'; return; }
+  c.plan = { type: 'book', day: Math.max(S.day + 1, c.study ? c.study.until : S.day + ri(1, 3)) };
+}
+
+// ---------- 每分钟推进一名到访公民 ----------
+function updCitizen(a) {
+  const c = C(a.cid);
+  if (a.path.length) {
+    stepAgent(a);
+    if (a.st === 'leave' && !a.gated && a.x <= 1.2) gateCheck(a, c);
+    if (!a.path.length) onArrive(a, c);
+    return;
+  }
+  a.px = a.x; a.py = a.y;
+  if (a.st === 'q') {
+    a.wait++; a.tw++;
+    if (a.tw > 20 && a.tw % 15 === 0) c.patience = clamp(c.patience - 1, 0, 100);
+    a.bub = a.wait > 25 ? '⏳' : '';
+    const opt = STEP[a.steps[a.si]].opt;
+    if (opt && a.wait > opt) { dropFromQueue(a); beh(c, '放弃等候', '等待过久，放弃本次' + D.ROOMS[STEP[a.steps[a.si]].rt].short); nextStep(a); }
+  } else if (a.st === 'svc') {
+    const s = St(a.staff), step = a.steps[a.si];
+    if (!s) { a.st = 'walk'; const rm = Rm(a.room); if (rm) { rm.q.unshift(a.id); a.st = 'q'; requeue(rm); } return; }
+    a.svc += staffEff(s); s.work++;
+    if (a.svc >= STEP[step].dur) { s.busy = 0; s.served++; finishService(a, c, step, s); }
+  } else if (a.st === 'exam' && a.cheatAt === S.minute) resolveCheat(a, c);
+}
+function onArrive(a, c) {
+  if (a.st === 'walk') {
+    const rm = Rm(a.room), step = a.steps[a.si];
+    if (!rm) return nextStep(a);
+    if (step === 'petition') return startPetition(a, c, rm);
+    rm.q.push(a.id); a.st = 'q'; requeue(rm);
+  } else if (a.st === 'toSvc') { a.st = 'svc'; a.svc = 0; a.bub = '💬'; }
+  else if (a.st === 'toSeat') { a.st = 'seat'; a.bub = ''; }
+  else if (a.st === 'leave') finalize(a, c);
+}
+function updRoomService(rm) {
+  if (!rm.q.length || !SERVICE_ROOMS[rm.type]) return;
+  for (const s of S.staff) {
+    if (s.room !== rm.id || !present(s) || s.busy) continue;
+    if (D.JOBS[s.job].room !== rm.type) continue;
+    const a = A(rm.q.shift());
+    if (!a) { if (!rm.q.length) break; continue; }
+    s.busy = a.id; a.staff = s.id; a.st = 'toSvc';
+    const cp = CUST[rm.type][s.station] || CUST[rm.type][0];
+    setDest(a, { r: rm.id, lx: cp[0], ld: cp[1] });
+    requeue(rm);
+    if (!rm.q.length) break;
+  }
+}
+
+// ---------- 各窗口办结效果 ----------
+function finishService(a, c, step, s) {
+  switch (step) {
+    case 'reg':
+      visitFee(c, 'reception');
+      invoice(c, '首次建档登记费', 'reg', D.FEES.reg, 0, 'reception');
+      c.registered = true;
+      beh(c, '建档', '完成身份登记与考试学籍建档');
+      break;
+    case 'review': doReview(a, c, s); break;
+    case 'cashier': doCashier(a, c); break;
+    case 'check': doCheck(a, c); break;
+    case 'bookstore': doBookstore(a, c); break;
+    case 'tutor': {
+      visitFee(c, 'tutoring');
+      const cur = curCourse(c), gain = Math.round(8 * staffEff(s));
+      const v = invoice(c, '一对一私教（当日一节）', 'tutor', D.FEES.tutor, 0, 'tutoring');
+      if (cur) c.prep[cur] = clamp(c.prep[cur] + gain, 0, 100);
+      c.tutorLeft--; c.stress = clamp(c.stress - 2, 0, 100);
+      beh(c, '私教', '完成一节一对一私教，准备度 +' + gain + '，剩余 ' + c.tutorLeft + ' 节', { inv: v.id });
+      if (c.tutorLeft <= 0) { c.tutorLeft = 0; a.book = true; a.steps.push('cashier'); }
+      break;
+    }
+    case 'counsel': {
+      visitFee(c, 'counsel');
+      const v = invoice(c, '心理辅导（自愿）', 'counsel', D.FEES.counsel, 0, 'counsel');
+      c.stress = clamp(c.stress - 18, 0, 100); c.patience = clamp(c.patience + 8, 0, 100);
+      beh(c, '心理辅导', '完成一次自愿心理辅导（内容保密）', { inv: v.id });
+      break;
+    }
+    case 'report': {
+      if (c.reported || nextExam(c) || certCount(c) < 7) break;
+      visitFee(c, 'report');
+      const v = invoice(c, '成绩核验与电子许可上报服务费', 'report', D.FEES.report, 0, 'report');
+      c.reported = S.day;
+      beh(c, '汇总上报', '七项认证汇总上报上级生命许可系统，等待电子回执', { inv: v.id });
+      log('📤 ' + c.name + ' 七项认证齐全，已汇总上报。最终许可由上级电子签发，本中心不制证。', 'good');
+      break;
+    }
+    case 'pod': {
+      if (c.slot !== 'active') break;
+      visitFee(c, 'pod');
+      const v = invoice(c, '修复舱常规维护服务', 'pod', D.FEES.pod, D.COSTS.pod, 'pod');
+      cashMove('podcost', -D.COSTS.pod, '修复舱耗材/能源/折旧', c.id);
+      c.pods++;
+      beh(c, '修复舱', '完成第 ' + c.pods + ' 次修复舱维护', { inv: v.id });
+      FX.push('pod');
+      if (!c.books['ANN@' + S.edition] && (S.stock.ANN || 0) > 0 && chance(0.3)) { a.buy = ['ANN']; a.steps.push('bookstore'); }
+      break;
+    }
+  }
+  nextStep(a);
+}
+function doReview(a, c, s) {
+  visitFee(c, 'review');
+  const ret = c.docs.pending;
+  let miss = false, bribed = false;
+  if (ret) { consultFee(c); bribed = tryBribe(a, c, s); }
+  if (!bribed && c.docs.n < 2) {
+    let p = ret ? 0.25 : 0.32;
+    if (S.policies.eDocs) p *= 0.5;
+    miss = chance(p);
+  }
+  if (miss) {
+    c.docs.n++; c.docs.pending = true; c.docs.name = pick(D.DOCS);
+    consultFee(c);
+    a.book = false; a.steps.length = a.si + 1;
+    c.plan = { type: 'docs', day: S.day + 2 };
+    beh(c, '缺件', '材料审核发现缺少' + c.docs.name + '，需回家补件后返访（第 ' + c.docs.n + ' 次）');
+  } else {
+    c.docs.pending = false; c.docs.ok = true; a.book = true;
+    if (a.steps.indexOf('cashier', a.si) < 0) a.steps.push('cashier');
+    beh(c, '材料审核', ret ? '补件齐全，材料审核通过' : '材料齐全，一次通过审核');
+  }
+}
+function doCashier(a, c) {
+  visitFee(c, 'cashier');
+  if (a.book) {
+    a.book = false;
+    const booked = bookExam(c);
+    if (booked && a.type === 'register' && curCourse(c) === 'C01' && chance(0.3 + (100 - c.fin) * 0.003)) { a.buy = ['TC01']; a.steps.push('bookstore'); }
+  }
+  let sum = 0;
+  for (const v of openInvs(c)) sum += payInv(c, v, '收费室');
+  if (sum) { a.bub = '💰'; FX.push('cash'); }
+  a.paid = true;
+}
+function sellBook(c, sku, evade) {
+  const b = D.BOOKS[sku], cur = curCourse(c);
+  if (!b || !bookAllowed(sku)) return null;
+  const tag = sku + (b.course ? '' : ':' + (cur || '-'));
+  if (c.books[tag + '@' + S.edition]) return null;
+  let ed = S.edition, price = b.price, old = false, uc = b.cost;
+  const hasNew = (S.stock[sku] || 0) > 0, hasOld = S.policies.oldEd && (S.old[sku] || 0) > 0 && !c.books[tag + '@' + S.oldEd];
+  if (hasOld && (!hasNew || chance(0.6))) { old = true; ed = S.oldEd; price = Math.round(b.price * 0.6); }
+  else if (!hasNew) { beh(c, '书店断货', b.name + ' 无库存，改用免费公开考纲'); return null; }
+  if (old) S.old[sku]--;
+  else { uc = Math.round(S.stockCost[sku] / S.stock[sku]); S.stockCost[sku] -= uc; S.stock[sku]--; }
+  c.books[tag + '@' + ed] = S.day;
+  const target = b.course || cur, gain = b.prep - (old ? 2 : 0);
+  if (target) c.prep[target] = clamp(c.prep[target] + gain, 0, 100);
+  const v = invoice(c, b.name + '（第' + ed + '版' + (old ? '·旧版互认折价' : '') + '）', 'book', price, uc, 'bookstore');
+  S.stats.books++;
+  if (!evade) payInv(c, v, '书店收银台');
+  beh(c, '购书', '自愿购买' + b.name + ' 第' + ed + '版，准备度 +' + gain + (evade ? '（未在收银台付款）' : ''), { inv: v.id });
+  return v;
+}
+function doBookstore(a, c) {
+  let any = false;
+  for (const sku of a.buy || []) if (sellBook(c, sku, a.evade)) any = true;
+  a.buy = null;
+  if (any) { visitFee(c, 'bookstore'); if (!a.evade) FX.push('cash'); }
+}
+
+// ---------- 查分：本人到窗口那一刻才知悉成绩并改变学籍 ----------
+function doCheck(a, c) {
+  const p = c.paper ? PAPER(c.paper) : null;
+  visitFee(c, 'reception');
+  if (!p || !p.pub) { beh(c, '查分', '成绩尚未发布，改日再来'); return; }
+  p.chk = S.day; c.paper = 0; c.lastCheck = S.day;
+  const co = D.COURSE[p.course], rec = c.rec[p.course], isW = p.kind === 'w', line = isW ? co.wLine : co.pLine;
+  const pass = !p.viol && p.score >= line, kname = isW ? '笔试' : '实操';
+  if (isW) { rec.wScore = p.score; rec.wTries++; } else { rec.pScore = p.score; rec.pTries++; }
+  rec.hist.push({ k: p.kind, s: p.score, d: p.sub, c: S.day, ok: pass, viol: p.viol });
+  if (pass) {
+    rec[p.kind] = 'pass';
+    c.stress = clamp(c.stress - 6, 0, 100); c.patience = clamp(c.patience + 6, 0, 100);
+    beh(c, '查分', '「' + co.short + '」' + kname + ' ' + p.score + ' 分，合格（合格线 ' + line + '；' + dateStr(p.sub) + '考试，' + dateStr(p.pub) + '发布）');
+    FX.push('pass');
+    if (isW && !pDone(rec) && S.policies.expRecog && c.exp.indexOf(p.course) >= 0) {
+      rec.p = 'equiv'; S.stats.equiv++;
+      beh(c, '等效认定', '已验证的对口职业资历获实操等效认定，免于重复初级实操');
+    }
+    if (wDone(rec) && pDone(rec)) afterCert(c, p.course, a);
+    else { a.book = true; a.steps.push('cashier'); }
+  } else {
+    rec[p.kind] = 'fail';
+    if (isW) rec.wFails++; else rec.pFails++;
+    c.stress = clamp(c.stress + 6 + Math.round((100 - c.tr.resilience) / 12), 0, 100);
+    c.patience = clamp(c.patience - 8 - Math.round((100 - c.tr.resilience) / 14), 0, 100);
+    beh(c, '查分', '「' + co.short + '」' + kname + (p.viol ? ' 因违纪成绩无效' : ' ' + p.score + ' 分，未通过（合格线 ' + line + '）'));
+    FX.push('fail');
+    afterFail(c, p.course, p.kind, a, true);
+  }
+}
+// 取得一项完整认证之后（a 可为空：不在馆内时由免考认定触发）
+function afterCert(c, course, a) {
+  const rec = c.rec[course], co = D.COURSE[course];
+  if (rec.cert) return;
+  rec.cert = true; rec.certDay = S.day;
+  S.stats.certs++; addTrust(0.03);
+  c.stress = clamp(c.stress - 12, 0, 100); c.patience = clamp(c.patience + 12, 0, 100);
+  c.study = null; c.strategy = '';
+  beh(c, '取得认证', '取得' + co.name + '（' + certCount(c) + '/7）');
+  log('📜 ' + c.name + ' 取得' + co.name + '（' + certCount(c) + '/7）。', 'good');
+  const ne = nextExam(c);
+  if (!ne) { if (a && hasRoom('report')) a.steps.push('report'); return; }
+  if (D.COURSE[ne.course].level > S.level) { beh(c, '等待资质', '下一科「' + D.COURSE[ne.course].short + '」超出本中心等级授权，回家等待'); return; }
+  if (a && chance(0.25 + (100 - c.fin) * 0.004 + c.tr.discipline * 0.002)) { a.buy = ['T' + ne.course]; a.steps.push('bookstore'); }
+  c.study = { until: S.day + ri(2, 5), rate: studyRate(c) };
+  c.plan = { type: 'book', day: c.study.until };
+}
+// 未通过后的自主抉择：教辅 / 私教 / 居家免费复习 / 直接重约（统一标准价）
+function afterFail(c, course, kind, a, allowPetition) {
+  const rec = c.rec[course], fails = kind === 'w' ? rec.wFails : rec.pFails;
+  if (allowPetition && fails >= 2 && hasRoom('petition') && !rec.wEx && !rec.pEx && !rec.pet && chance(0.5)) {
+    rec.pet = true; c.plan = { type: 'petition', day: S.day + 1 }; c.strategy = '向局长祈愿';
+    beh(c, '复习抉择', '连续 ' + fails + ' 次未通过，决定明日到祈愿室向局长申诉');
+    return;
+  }
+  if (c.patience < 12) {
+    c.paused = true; c.strategy = '暂时休学'; c.plan = { type: 'book', day: S.day + ri(8, 14) };
+    beh(c, '休学', '耐心耗尽，暂时离开一段时间（之后会回来，不会永久消失）');
+    return;
+  }
+  if (c.stress > 70 && staffed('counsel') && chance(0.5)) {
+    c.plan = { type: 'counsel', day: S.day + 1 }; c.strategy = '先做心理辅导';
+    beh(c, '复习抉择', '压力过高，自愿预约明日心理辅导');
+    return;
+  }
+  const sku = 'G' + course, opts = [];
+  const canGuide = a && staffed('bookstore') && bookAllowed(sku) && !c.books[sku + '@' + S.edition] && ((S.stock[sku] || 0) > 0 || (S.policies.oldEd && (S.old[sku] || 0) > 0));
+  if (canGuide) opts.push({ k: 'guide', w: 18 + (100 - c.fin) * 0.3 + c.tr.discipline * 0.1 });
+  if (staffed('tutoring')) opts.push({ k: 'tutor', w: 8 + (100 - c.fin) * 0.25 + fails * 6 });
+  opts.push({ k: 'home', w: 18 + c.fin * 0.3 + c.tr.discipline * 0.15 });
+  if (a) opts.push({ k: 'rebook', w: 10 + c.tr.courage * 0.2 + (100 - c.patience) * 0.1 });
+  const ch = wpick(opts).k;
+  if (ch === 'guide') {
+    a.buy = [sku]; a.steps.push('bookstore');
+    c.study = { until: S.day + ri(2, 4), rate: studyRate(c) }; c.plan = { type: 'book', day: c.study.until }; c.strategy = '购买当届教辅后居家复习';
+  } else if (ch === 'tutor') {
+    c.tutorLeft = ri(2, 4); c.plan = { type: 'tutor', day: S.day + 1 }; c.strategy = '连续 ' + c.tutorLeft + ' 日一对一私教';
+  } else if (ch === 'home') {
+    c.study = { until: S.day + ri(2, 4), rate: studyRate(c) }; c.plan = { type: 'book', day: c.study.until }; c.strategy = '免费居家复习公开考纲';
+  } else {
+    a.book = true; a.steps.push('cashier'); c.strategy = '直接预约下一场（统一标准价）';
+  }
+  beh(c, '复习抉择', '选择：' + c.strategy);
+}
+
+// ---------- 祈愿室 ----------
+function startPetition(a, c, rm) {
+  const ne = nextExam(c);
+  if (!ne) return nextStep(a);
+  const k = S.petitions.length % CUST.petition.length;
+  a.st = 'petition'; a.bub = '🙏';
+  setDest(a, { r: rm.id, lx: CUST.petition[k][0], ld: CUST.petition[k][1] });
+  c.examBonus = Math.max(c.examBonus, 3);
+  S.petitions.push({ cid: c.id, course: ne.course, kind: ne.kind, day: S.day });
+  beh(c, '祈愿', '在祈愿室向 ' + S.player + ' 局长申诉「' + D.COURSE[ne.course].short + '」' + (ne.kind === 'w' ? '笔试' : '实操'));
+  log('🙏 ' + c.name + '：“尊敬的 ' + S.player + ' 局长，恳请您考虑我还未考出来的生命。”（公民与个案页可处理）', 'ask');
+  FX.push('ask');
+}
+function grantExemption(c, course, why, swap) {
+  const rec = c.rec[course];
+  if (rec.cert || rec.wEx || rec.pEx) return null;
+  const kind = wDone(rec) ? 'p' : 'w';
+  const ex = { day: S.day, by: S.player, why, kind, audited: false, swap: !!swap };
+  if (kind === 'w') rec.wEx = ex; else rec.pEx = ex;
+  S.stats.exemptions++;
+  beh(c, '免考认定', '获「' + D.COURSE[course].short + '」' + (kind === 'w' ? '笔试' : '实操') + '《单项免考认定书》（另一项仍须实际通过；不等于考试合格分）', { hid: !!swap });
+  return ex;
+}
+function petitionDecide(cid, choice) {
+  const i = S.petitions.findIndex(p => p.cid === cid);
+  if (i < 0) return { ok: false, msg: '该祈愿已处理' };
+  const pt = S.petitions[i], c = C(cid), a = A(c.agent), co = D.COURSE[pt.course];
+  S.petitions.splice(i, 1);
+  if (!a) return { ok: false, msg: '当事人已离场' };
+  let msg = '';
+  if (choice === 'exempt') {
+    const ex = grantExemption(c, pt.course, '祈愿室特批');
+    if (!ex) { msg = '该科已有免考凭证，每门最多一张。'; afterFail(c, pt.course, pt.kind, a, false); }
+    else {
+      addComp(-4);
+      msg = '已签发「' + co.short + '」' + (ex.kind === 'w' ? '笔试' : '实操') + '单项免考认定书，合规 -4，留档待上级抽查。';
+      log('🖋 ' + S.player + ' 局长特批 ' + c.name + ' 「' + co.short + '」' + (ex.kind === 'w' ? '笔试' : '实操') + '免考。其余科目与另一项仍须实考。', 'ask');
+      const rec = c.rec[pt.course];
+      if (wDone(rec) && pDone(rec)) afterCert(c, pt.course, a);
+      else { a.book = true; a.steps.push('cashier'); }
+    }
+  } else if (choice === 'volunteer') {
+    S.volunteer += 3; addTrust(-3); addComp(-3);
+    beh(c, '公益辅助劳动', '被安排 3 个营业日轻量辅助工作（不得担任监考/阅卷）');
+    msg = '已安排公益辅助劳动 3 日（每日最多节省工资 35），信任 -3、合规 -3。';
+    afterFail(c, pt.course, pt.kind, a, false);
+  } else if (choice === 'fee') {
+    if (c.fin > 75) {
+      beh(c, '祈愿', '无力承担特别申诉服务费，婉拒');
+      msg = c.name + ' 无力承担 280，婉拒了。';
+      afterFail(c, pt.course, pt.kind, a, false);
+    } else {
+      const v = invoice(c, '特别申诉服务费', 'special', D.FEES.special, 0, 'petition');
+      c.examBonus = 5; a.evade = false; a.book = true; a.steps.push('cashier');
+      beh(c, '特别申诉', '缴纳特别申诉服务费，下次考试心理稳定 +5（不保证合格）', { inv: v.id });
+      msg = '已开具特别申诉服务费 280（不保证合格，不能买分）。';
+    }
+  } else {
+    beh(c, '祈愿', '局长暂不受理，恢复正常备考');
+    msg = '暂不受理。';
+    afterFail(c, pt.course, pt.kind, a, false);
+  }
+  nextStep(a);
+  return { ok: true, msg };
+}
+
+// ---------- 开考、交卷 ----------
+function examStaff(rm) { return S.staff.filter(s => s.room === rm.id && present(s) && D.JOBS[s.job].room === rm.type); }
+function admit(ses) {
+  for (const cid of ses.cids) {
+    if (ses.att.indexOf(cid) >= 0) continue;
+    const c = C(cid), a = c && A(c.agent);
+    if (!a || a.st !== 'seat' || a.room !== ses.room) continue;
+    ses.att.push(cid);
+    a.st = 'exam'; a.bub = ses.kind === 'w' ? '📝' : D.COURSE[c.booking.course].icon;
+    visitFee(c, ses.kind === 'w' ? 'written' : 'practical');
+    S.stats.seatings++;
+    const course = c.booking.course, rec = c.rec[course];
+    rec[ses.kind] = 'sat';
+    a.cheatAt = 0;
+    if (ses.kind === 'w' && rec.wFails >= 1 && c.tr.principle < 42 && c.tr.courage > 52 && chance(0.3)) a.cheatAt = ses.t0 + ri(15, 70);
+    beh(c, '到考', '入场参加「' + D.COURSE[course].short + '」' + (ses.kind === 'w' ? '笔试' : '实操（' + D.COURSE[course].prac + '）'));
+  }
+}
+function resolveCheat(a, c) {
+  const rm = Rm(a.room);
+  let p = 0;
+  for (const s of S.staff) {
+    if (s.job !== 'inspector' || s.st !== 'post') continue;
+    const ag = A(s.agent), here = ag && zoneOf(ag.x, ag.y) === rm.id;
+    if (s.duty === 'exam') p = Math.max(p, here ? 0.8 : 0.3);
+    else if (s.duty === 'roam' && here) p = Math.max(p, 0.4);
+  }
+  if (chance(p)) {
+    a.viol = true; a.bub = '🚫';
+    cashMove('fine', D.COSTS.cheatFine, '作弊罚款（罚没）', c.id);
+    S.stats.fines += D.COSTS.cheatFine; S.stats.cheatsCaught++; addComp(0.5);
+    beh(c, '作弊被查', '考场内使用小抄被巡查员查获，罚款 ' + D.COSTS.cheatFine + '，本场成绩记为违纪无效');
+    log('🚫 巡查员在考场查获 ' + c.name + ' 的小抄，罚款 ' + D.COSTS.cheatFine + ' 计入罚没收入。', 'good');
+    FX.push('alert');
+  } else {
+    a.cheated = true;
+    beh(c, '作弊', '考场内偷看小抄，未被发现', { hid: true });
+  }
+}
+function makePaper(c, a, kind) {
+  const course = c.booking.course;
+  let score = Math.round(examMean(c, course, kind) + gauss() * EXAM_SD + (a && a.cheated ? 9 : 0));
+  score = clamp(score, 0, 100);
+  const p = { id: nid(), cid: c.id, course, kind, sub: S.day, score, viol: !!(a && a.viol), mk: 0, prog: 0, pub: 0, planned: 0, chk: 0 };
+  S.papers.push(p); IDX.p.set(p.id, p); S.gq.push(p.id);
+  c.paper = p.id; c.booking = null; c.examBonus = 0; c.study = null;
+  beh(c, '交卷', (kind === 'w' ? '笔试交卷' : '实操记录提交') + '，成绩封存送阅卷室，最早次营业日发布');
+}
+function endSession(ses) {
+  ses.st = 'done';
+  for (const cid of ses.cids) {
+    const c = C(cid);
+    if (!c) continue;
+    const a = A(c.agent);
+    if (ses.att.indexOf(cid) >= 0) { makePaper(c, a, ses.kind); if (a) nextStep(a); }
+    else if (c.booking && c.booking.key === ses.key) {
+      c.rec[c.booking.course][ses.kind] = 'none'; c.booking = null;
+      beh(c, '缺考', '未在规定时间入场，本场预约作废');
+      if (a && (a.st === 'seat' || a.st === 'toSeat')) nextStep(a);
+    }
+  }
+  for (const s of S.staff) if (s.room === ses.room) s.examUntil = 0;
+  FX.push('paper');
+}
+function cancelSession(ses, why) {
+  ses.st = 'cancel';
+  S.stats.cancelled++; S.cancelAud++; addTrust(-1);
+  const rname = ses.kind === 'w' ? '笔试' : '实操';
+  log('⚠️ ' + timeStr(ses.kind === 'w' ? D.W_SLOTS[ses.slot] : D.P_SLOTS[ses.slot]) + ' ' + rname + '场次取消：' + why + '。已为考生免费顺延，不重复收报名费。', 'bad');
+  for (const cid of ses.cids) {
+    const c = C(cid);
+    if (!c || !c.booking || c.booking.key !== ses.key) continue;
+    const course = c.booking.course;
+    c.booking = null; c.rec[course][ses.kind] = 'none';
+    const bk = reserve(c, course, ses.kind);
+    if (bk) { c.plan = { type: ses.kind === 'w' ? 'examW' : 'examP', day: bk.day }; beh(c, '场次顺延', '中心原因（' + why + '）取消，免费顺延至 ' + dateStr(bk.day)); }
+    else { c.prepaid = true; c.plan = { type: 'book', day: S.day + 1 }; beh(c, '场次取消', '中心原因取消，已缴报名费保留'); }
+    const a = A(c.agent);
+    if (a && (a.st === 'seat' || a.st === 'toSeat')) nextStep(a);
+  }
+  FX.push('alert');
+}
+function updExams() {
+  const m = S.minute;
+  for (const key of S.today) {
+    const ses = S.sessions[key];
+    if (!ses || ses.st === 'done' || ses.st === 'cancel' || !ses.cids.length) continue;
+    const isW = ses.kind === 'w', t0 = isW ? D.W_SLOTS[ses.slot] : D.P_SLOTS[ses.slot], dur = isW ? D.W_DUR : D.P_DUR;
+    const rm = Rm(ses.room);
+    if (ses.st === 'open') {
+      if (m < t0) continue;
+      const st = rm ? examStaff(rm) : [];
+      if (st.length) {
+        ses.st = 'run'; ses.t0 = m;
+        for (const s of st) s.examUntil = m + dur;
+        if (isW) { log('🔔 ' + timeStr(m) + ' 「' + D.COURSE[ses.course].short + '」笔试开考，预约 ' + ses.cids.length + ' 人。', 'info'); FX.push('bell'); }
+      } else if (m >= t0 + (isW ? 20 : 15)) { cancelSession(ses, isW ? '笔试厅无监考员在岗' : '实操室无考评员在岗'); continue; }
+    }
+    if (ses.st === 'run') {
+      if (m <= ses.t0 + (isW ? 15 : 10)) admit(ses);
+      if (m >= ses.t0 + dur) endSession(ses);
+    }
+  }
+}
+
+// ---------- 阅卷与发布 ----------
+function sampleCheckDelay(atStart) {
+  const r = R();
+  let d = r < 0.45 ? 0 : r < 0.62 ? 1 : r < 0.75 ? 2 : r < 0.87 ? ri(3, 4) : r < 0.95 ? ri(5, 7) : ri(8, 12);
+  if (!atStart && d < 1) d = 1;
+  return d;
+}
+function publish(p, atStart) {
+  if (p.pub) return;
+  p.pub = S.day;
+  p.planned = S.day + sampleCheckDelay(atStart);
+  const c = C(p.cid);
+  if (c && !c.agent && !c.plan) c.plan = { type: 'check', day: p.planned };
+}
+function updGrading() {
+  if (!S.gq.length) return;
+  let cap = 0;
+  for (const s of S.staff) {
+    if (s.job !== 'grader' || !present(s) || !s.room) continue;
+    cap += staffEff(s); s.work++;
+  }
+  if (S.policies.aiGrading) cap *= 1.8;
+  while (cap > 0 && S.gq.length) {
+    const p = PAPER(S.gq[0]);
+    if (!p) { S.gq.shift(); continue; }
+    const need = p.kind === 'w' ? 22 : 10, take = Math.min(cap, need - p.prog);
+    p.prog += take; cap -= take;
+    if (p.prog >= need - 1e-9) {
+      p.mk = S.day; S.gq.shift();
+      if (S.day > p.sub) publish(p, false);
+    }
+  }
+}
+function publishDue() {
+  let n = 0;
+  for (const p of S.papers) if (p.mk && !p.pub && p.sub < S.day) { publish(p, true); n++; }
+  if (n) log('📢 今日发布 ' + n + ' 份成绩（后台可查；须本人返访查分后才知悉并生效）。', 'info');
+}
+
+// ---------- 局长互动：每日全中心 3 次、每人每日 1 次 ----------
+const ENC = {
+  warm: { name: '温和鼓励', pat: 11, stress: -8, prep: 0, trust: 0 },
+  persist: { name: '鼓励坚持', pat: 5, stress: -4, prep: 2, trust: 0 },
+  listen: { name: '倾听诉求', pat: 9, stress: -6, prep: 0, trust: 1 },
+};
+function encourLeft() { return S.encour.day === S.day ? Math.max(0, D.ENCOURAGE_PER_DAY - S.encour.n) : D.ENCOURAGE_PER_DAY; }
+function encourage(cid, kind) {
+  const c = C(cid), e = ENC[kind];
+  if (!c || !e) return { ok: false, msg: '无效操作' };
+  if (S.encour.day !== S.day) S.encour = { day: S.day, n: 0 };
+  if (S.encour.n >= D.ENCOURAGE_PER_DAY) return { ok: false, msg: '今日局长互动额度（3 次）已用完' };
+  if (c.encDay === S.day) return { ok: false, msg: '今天已经与 ' + c.name + ' 谈过了' };
+  S.encour.n++; c.encDay = S.day;
+  c.patience = clamp(c.patience + e.pat, 0, 100); c.stress = clamp(c.stress + e.stress, 0, 100);
+  c.relation = clamp(c.relation + 6, 0, 100);
+  const cur = curCourse(c);
+  if (e.prep && cur) c.prep[cur] = clamp(c.prep[cur] + e.prep, 0, 100);
+  if (e.trust) addTrust(e.trust);
+  beh(c, '局长互动', S.player + ' 局长' + e.name + '：耐心 +' + e.pat + '，压力 ' + e.stress + (e.prep ? '，准备度 +' + e.prep : '') + '（不收费，不改变已阅卷成绩）');
+  FX.push('click');
+  return { ok: true, msg: e.name + '已记录到行为履历' };
+}
+
+// ===== 模拟内核 3：员工与合同、巡查与红包、机构升级与上级审查、政策、营业日循环、存档、对外接口 =====
+const TEMP_DAYS = [3, 5, 7, 10];
+const PROOFS = [
+  { name: '《真实到考人次证明》', job: 'proctor' },
+  { name: '《报名费台账一致性证明》', job: 'cashier' },
+  { name: '《阅卷留痕与签字证明》', job: 'grader' },
+];
+const fail = msg => ({ ok: false, msg });
+
+// ---------- 员工 ----------
+function staffSkill(s) { return s.temp ? (s.skills[D.JOBS[s.job].skill] || 50) : s.quality; }
+function staffEff(s) {
+  let e = 0.6 + staffSkill(s) / 200;
+  if (s.sat < 35) e *= 0.7; else if (s.sat > 75) e *= 1.08;
+  return e;
+}
+function freeStation(rm, except) {
+  const n = (POSTS[rm.type] || []).length;
+  for (let i = 0; i < n; i++) if (!S.staff.some(s => s !== except && s.room === rm.id && s.station === i)) return i;
+  return -1;
+}
+function autoRoom(s) {
+  const rt = D.JOBS[s.job].room;
+  if (!rt) return false;
+  let best = null, bi = -1, bn = 99;
+  for (const rm of roomsOf(rt)) {
+    const i = freeStation(rm, s), n = S.staff.filter(x => x !== s && x.room === rm.id).length;
+    if (i >= 0 && n < bn) { best = rm; bi = i; bn = n; }
+  }
+  if (!best) return false;
+  s.room = best.id; s.station = bi; s.rest = bi % 2 ? 'B' : 'A';
+  return true;
+}
+function addStaff(p, job, temp, wage) {
+  const s = {
+    id: nid(), name: p.name, job, temp: !!temp, wage: Math.round(wage), expect: temp ? p.expect : D.JOBS[job].wage, room: 0, station: 0, st: 'off', agent: 0,
+    sat: 62, rest: 'A', busy: 0, work: 0, served: 0, examUntil: 0, duty: job === 'inspector' ? 'gate' : '', end: 0, start: S.day, back: 0, lowDays: 0,
+    bonusDay: 0, renewDay: 0, cid: temp && p.id ? p.id : 0, tr: p.tr, skills: p.skills, hue: p.hue, species: p.species, age: p.age,
+    quality: 60, mismatch: false, origin: '', rested: false, lounge: false, why: '', caught: 0, nextMove: 0, patrol: 0, bribes: 0,
+  };
+  S.staff.push(s); IDX.s.set(s.id, s);
+  autoRoom(s);
+  return s;
+}
+function inspectorPost(s) {
+  const d = s.duty, gate = { x: 1.9, y: 8.4 };
+  if (d === 'gate') return gate;
+  let rms;
+  if (d === 'exam') {
+    const run = S.today.map(k => S.sessions[k]).filter(x => x && x.cids.length && (x.st === 'run' || (x.st === 'open' && (x.kind === 'w' ? D.W_SLOTS[x.slot] : D.P_SLOTS[x.slot]) - S.minute < 25)));
+    rms = run.map(x => Rm(x.room)).filter(Boolean);
+    if (!rms.length) rms = S.rooms.filter(r => r.type === 'written' || r.type === 'practical');
+  } else if (d === 'integrity') rms = S.rooms.filter(r => r.type === 'review' || r.type === 'cashier' || r.type === 'reception' || r.type === 'bookstore' || r.type === 'lounge');
+  else rms = S.rooms;
+  if (!rms.length) return { x: 1.9, y: 10.6 };
+  s.patrol = d === 'roam' ? ri(0, rms.length - 1) : (s.patrol + 1) % rms.length;
+  return { r: rms[s.patrol % rms.length].id, lx: 5.5, ld: 1.1 };
+}
+function staffPost(s) {
+  if (s.job === 'inspector') return inspectorPost(s);
+  const rm = s.room && Rm(s.room);
+  if (rm) { const p = POSTS[rm.type][s.station] || POSTS[rm.type][0] || [3, 3]; return { r: rm.id, lx: p[0], ld: p[1] }; }
+  return { x: 0.7 + (s.id % 3) * 0.7, y: 1.5 + (s.id % 6) * 0.8 };
+}
+function deploy(s) {
+  if (s.agent) return;
+  const a = { id: nid(), k: 'stf', sid: s.id, x: 0, y: 0, px: 0, py: 0, path: [], place: OUTSIDE, bub: '' };
+  S.agents.push(a); IDX.a.set(a.id, a);
+  teleport(a, staffPost(s));
+  s.agent = a.id; s.st = 'post'; s.nextMove = S.minute + 20;
+}
+function dropAgent(a) {
+  const i = S.agents.indexOf(a);
+  if (i >= 0) S.agents.splice(i, 1);
+  IDX.a.delete(a.id);
+}
+function updStaffAgent(a) {
+  const s = St(a.sid);
+  if (!s) return dropAgent(a);
+  if (a.path.length) {
+    stepAgent(a);
+    if (!a.path.length) {
+      if (s.st === 'toRest') s.st = 'rest';
+      else if (s.st === 'toPost') s.st = 'post';
+      else if (s.st === 'away') { dropAgent(a); s.agent = 0; }
+    }
+    return;
+  }
+  a.px = a.x; a.py = a.y;
+  const m = S.minute, w = D.REST[s.rest];
+  a.bub = s.st === 'rest' ? '☕' : '';
+  if (s.st === 'post') {
+    if (w && !s.rested && m >= w[0] && m < w[1] - 10 && !s.busy && !(s.examUntil > m)) {
+      const lg = roomsOf('lounge')[0], k = s.id % LOUNGE.length;
+      s.st = 'toRest'; s.lounge = !!lg;
+      setDest(a, lg ? { r: lg.id, lx: LOUNGE[k][0], ld: LOUNGE[k][1] } : { x: 0.7 + (s.id % 3) * 0.7, y: 13 + (s.id % 6) * 0.8 });
+    } else if (s.job === 'inspector' && s.duty !== 'gate' && m >= s.nextMove) {
+      s.nextMove = m + ri(18, 30);
+      setDest(a, inspectorPost(s));
+    }
+  } else if (s.st === 'rest' && w && m >= w[1]) {
+    s.rested = true; s.st = 'toPost';
+    setDest(a, staffPost(s));
+  }
+}
+function moveToPost(s) {
+  const a = A(s.agent);
+  if (!a || s.st === 'away' || s.st === 'rest' || s.st === 'toRest') return;
+  s.st = s.job === 'inspector' ? 'post' : 'toPost';
+  setDest(a, staffPost(s));
+}
+function assignStaff(sid, roomId) {
+  const s = St(sid);
+  if (!s) return fail('员工不存在');
+  if (s.busy) return fail(s.name + ' 正在办理业务，请稍后调整');
+  if (s.examUntil > S.minute) return fail(s.name + ' 正在监考，考试结束后才能调岗');
+  if (!roomId) { s.room = 0; s.station = 0; moveToPost(s); return { ok: true }; }
+  const rm = Rm(roomId);
+  if (!rm || D.JOBS[s.job].room !== rm.type) return fail('岗位与房间不匹配');
+  const i = freeStation(rm, s);
+  if (i < 0) return fail(D.ROOMS[rm.type].short + ' 的岗位已满');
+  s.room = rm.id; s.station = i;
+  moveToPost(s);
+  return { ok: true };
+}
+function setDuty(sid, duty) {
+  const s = St(sid);
+  if (!s || s.job !== 'inspector' || !D.DUTIES[duty]) return fail('只有巡查员可以分配巡查任务');
+  s.duty = duty; s.nextMove = S.minute + 20;
+  moveToPost(s);
+  log('🛡 ' + s.name + ' 改任「' + D.DUTIES[duty].name + '」。', 'info');
+  return { ok: true };
+}
+function setRest(sid, shift) {
+  const s = St(sid);
+  if (!s || (shift !== 'A' && shift !== 'B' && shift !== 'N')) return fail('无效的休息班次');
+  s.rest = shift;
+  return { ok: true };
+}
+function bonus(sid) {
+  const s = St(sid);
+  if (!s) return fail('员工不存在');
+  if (s.bonusDay === S.day) return fail('今天已经发过奖金，同日重复发放不再有效');
+  if (S.cash < D.COSTS.bonus) return fail('现金不足');
+  cashMove('bonus', -D.COSTS.bonus, '奖金 ' + s.name);
+  s.bonusDay = S.day; s.sat = clamp(s.sat + 12, 0, 100);
+  FX.push('cash');
+  return { ok: true, msg: s.name + ' 满意度 +12' };
+}
+function removeStaff(s) {
+  const a = A(s.agent);
+  if (a) dropAgent(a);
+  if (s.busy) { const ca = A(s.busy); if (ca) ca.staff = 0; }
+  const c = s.cid && C(s.cid);
+  if (c) c.staff = 0;
+  const i = S.staff.indexOf(s);
+  if (i >= 0) S.staff.splice(i, 1);
+  IDX.s.delete(s.id);
+}
+function dismiss(sid) {
+  const s = St(sid);
+  if (!s) return fail('员工不存在');
+  if (s.examUntil > S.minute) return fail('监考进行中，不能解聘');
+  if (s.st === 'away') return fail(s.name + ' 外出办事中');
+  const c = s.cid && C(s.cid);
+  if (c) beh(c, '合同终止', '中心提前终止「' + D.JOBS[s.job].name + '」临时合同（考籍与账单不受影响）');
+  log('📄 ' + s.name + '（' + D.JOBS[s.job].name + '）' + (s.temp ? '临时合同已终止。' : '已退回人事编制署。'), 'info');
+  removeStaff(s);
+  return { ok: true };
+}
+
+// ---------- 正式编制：向人事编制署申请，次营业日答复，可能不对口 ----------
+const formalCount = () => S.staff.filter(s => !s.temp).length + S.apps.length;
+function applyFormal(job) {
+  const j = D.JOBS[job];
+  if (!j || j.temp) return fail('该岗位只能签临时合同，人事编制署不予派员');
+  if (formalCount() >= D.FORMAL_CAP[S.level]) return fail('正式编制已达本级上限 ' + D.FORMAL_CAP[S.level] + ' 人');
+  S.apps.push({ id: nid(), job, day: S.day, cand: null });
+  log('📨 已向人事编制署申请「' + j.name + '」编制，最早次营业日答复。', 'info');
+  return { ok: true };
+}
+function replyApps() {
+  for (const ap of S.apps) {
+    if (ap.cand || ap.day >= S.day) continue;
+    const p = makePerson(), mis = chance(0.3);
+    ap.cand = { name: p.name, age: p.age, species: p.species, tr: p.tr, skills: p.skills, hue: p.hue, expect: p.expect,
+      quality: mis ? ri(22, 45) : ri(55, 92), mismatch: mis, origin: p.job };
+    log('📨 人事编制署答复：派出 ' + p.name + ' 任「' + D.JOBS[ap.job].name + '」' + (mis ? '（原岗位：' + p.job + '，不完全对口）' : '') + '，请在【员工排班】决定是否接收。', 'key');
+  }
+}
+function acceptCandidate(appId) {
+  const i = S.apps.findIndex(a => a.id === appId), ap = S.apps[i];
+  if (!ap || !ap.cand) return fail('尚未收到答复');
+  if (S.cash < D.COSTS.hire) return fail('现金不足，入职手续费 ' + D.COSTS.hire);
+  S.apps.splice(i, 1);
+  cashMove('hire', -D.COSTS.hire, '入职手续 ' + ap.cand.name);
+  const s = addStaff(ap.cand, ap.job, false, D.JOBS[ap.job].wage);
+  s.quality = ap.cand.quality; s.mismatch = ap.cand.mismatch; s.origin = ap.cand.origin;
+  deploy(s);
+  log('✅ ' + s.name + ' 入职「' + D.JOBS[s.job].name + '」' + (s.room ? '' : '，暂无对应房间岗位，待命中') + '。', 'good');
+  return { ok: true, staff: s };
+}
+function declineCandidate(appId) {
+  const i = S.apps.findIndex(a => a.id === appId);
+  if (i < 0) return fail('申请不存在');
+  S.apps.splice(i, 1);
+  return { ok: true };
+}
+
+// ---------- 临时合同：从考生池谈判签约 ----------
+function offerChance(c, job, wage, days, swap) {
+  let p = 0.45 + (wage - c.expect) / 50 + (c.fin - 50) / 180 + (days <= 5 ? 0.05 : -0.012 * (days - 5));
+  if (swap) p += c.tr.principle < 55 ? 0.3 : -0.35;
+  return clamp(p, 0.03, 0.97);
+}
+function offerTemp(cid, job, wage, days, swap) {
+  const c = C(cid), j = D.JOBS[job];
+  if (!c || !j || !j.temp) return fail('该岗位不是临时合同岗位');
+  wage = Math.round(wage);
+  if (TEMP_DAYS.indexOf(days) < 0 || !(wage >= 40 && wage <= 200)) return fail('合同条件无效');
+  if (c.staff) return fail(c.name + ' 已在本中心任职');
+  if (!c.firstDay) return fail('对方尚未到访过本中心');
+  if (c.askDay === S.day) return fail('今天已经与 ' + c.name + ' 谈过一次，明日再议');
+  if (j.room && !hasRoom(j.room)) return fail('需先建成' + D.ROOMS[j.room].name);
+  c.askDay = S.day;
+  const cur = curCourse(c);
+  if (swap && (!cur || c.rec[cur].wEx || c.rec[cur].pEx)) swap = false;
+  if (swap && c.tr.principle > 70) {
+    addComp(-5); addTrust(-2);
+    beh(c, '拒绝并举报', '拒绝以单项免考作为雇佣交换条件，并向上级举报');
+    log('📣 ' + c.name + ' 拒绝了“免考换工”提议并向上级举报：合规 -5，信任 -2。', 'key');
+    return { ok: true, accepted: false, msg: c.name + ' 拒绝并举报了这项提议。' };
+  }
+  if (!chance(offerChance(c, job, wage, days, swap))) {
+    beh(c, '拒绝聘用', '婉拒「' + j.name + '」临时合同（日薪 ' + wage + '，' + days + ' 日；期望日薪约 ' + c.expect + '）');
+    return { ok: true, accepted: false, msg: c.name + ' 婉拒了（期望日薪约 ' + c.expect + '）。' };
+  }
+  const s = addStaff(c, job, true, wage);
+  c.staff = s.id;
+  const now = !c.agent && !(c.plan && c.plan.day <= S.day) && S.minute < D.DAY_END - 60;
+  s.end = now ? S.day + days - 1 : S.day + days;
+  if (now) deploy(s);
+  beh(c, '签约', '签订「' + j.name + '」临时合同：日薪 ' + wage + '，' + days + ' 个营业日（考籍保留；工资不抵扣个人账单）');
+  if (swap) {
+    grantExemption(c, cur, '雇佣交换', true);
+    const rec = c.rec[cur];
+    if (wDone(rec) && pDone(rec)) afterCert(c, cur, null);
+    log('🤫 以「' + D.COURSE[cur].short + '」单项免考换取 ' + c.name + ' 签约。此为违规交换，已留档，上级抽查时风险很高。', 'ask');
+  }
+  log('🤝 ' + c.name + ' 签约「' + j.name + '」，日薪 ' + wage + '，至 ' + dateStr(s.end) + (now ? '，即刻到岗。' : '，下个营业日到岗。'), 'good');
+  return { ok: true, accepted: true, staff: s, msg: c.name + ' 接受了合同。' };
+}
+function renew(sid, days) {
+  const s = St(sid);
+  if (!s || !s.temp || TEMP_DAYS.indexOf(days) < 0) return fail('无法续签');
+  if (s.renewDay === S.day) return fail('今天已经谈过续签');
+  s.renewDay = S.day;
+  const p = s.sat >= 45 ? 0.92 : s.sat >= 30 ? 0.5 : 0.12;
+  if (!chance(p)) { log('📄 ' + s.name + ' 拒绝续签（满意度 ' + s.sat + '）。', 'bad'); return { ok: true, accepted: false, msg: s.name + ' 拒绝续签。' }; }
+  s.end = Math.max(s.end, S.day - 1) + days;
+  const c = s.cid && C(s.cid);
+  if (c) beh(c, '续签', '续签「' + D.JOBS[s.job].name + '」临时合同 ' + days + ' 日，至 ' + dateStr(s.end));
+  return { ok: true, accepted: true, msg: s.name + ' 续签至 ' + dateStr(s.end) + '。' };
+}
+
+// ---------- 红包：真实动机 + 对象可能受诱惑 + 五格内无他人；证据隐藏直到被发现 ----------
+function zoneOf(x, y) {
+  if (x < HALL_W) return 0;
+  const col = Math.floor((x - HALL_W) / LOT_W);
+  for (let r = 0; r < ROWS.length; r++) {
+    if (y >= ROWS[r].y && y <= ROWS[r].y + LOT_D) {
+      const lot = r * LOT_COLS + col, rm = S.rooms.find(q => q.lot === lot);
+      return rm ? rm.id : 0;
+    }
+  }
+  return 0;
+}
+function bribeEligible(c, s, a) {
+  if (!(c.docs.pending && c.docs.n >= 1 && c.tr.principle < 45 && c.tr.courage > 48 && c.fin < 75)) return { ok: false, why: '当事人没有真实动机' };
+  if (!((s.tr.greed > 55 && s.tr.principle < 50) || (s.sat < 35 && s.tr.principle < 60))) return { ok: false, why: '接收对象不受诱惑' };
+  for (const b of S.agents) {
+    if (b === a || b.id === s.agent) continue;
+    if (Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= 5) return { ok: false, why: '五格内有其他人' };
+  }
+  return { ok: true, why: '' };
+}
+function tryBribe(a, c, s) {
+  if (!bribeEligible(c, s, a).ok || !chance(0.7)) return false;
+  const amt = 40;
+  S.bribes.push({ id: nid(), cid: c.id, sid: s.id, sname: s.name, d: S.day, amt, found: 0, by: '' });
+  s.bribes++;
+  beh(c, '红包', '趁四下无人向 ' + s.name + ' 塞了 ' + amt + ' 的红包，补件“顺利通过”', { hid: true });
+  return true;
+}
+function revealBribe(b, by) {
+  b.found = S.day; b.by = by;
+  S.stats.bribesFound++;
+  const c = C(b.cid), s = St(b.sid);
+  if (c) for (const h of c.beh) if (h.hid && h.a === '红包' && h.d === b.d) h.hid = false;
+  if (s) s.sat = clamp(s.sat - 15, 0, 100);
+}
+function integritySweep() {
+  let p = 0, who = null;
+  for (const s of S.staff) {
+    if (s.job !== 'inspector' || s.st === 'off' || s.st === 'leave') continue;
+    const q = s.duty === 'integrity' ? 0.25 + staffSkill(s) / 250 : s.duty === 'roam' ? 0.1 : 0;
+    if (q > p) { p = q; who = s; }
+  }
+  if (!who) return;
+  for (const b of S.bribes) {
+    if (b.found || !chance(p)) continue;
+    revealBribe(b, who.name);
+    cashMove('confiscate', b.amt, '红包没收（' + b.sname + '）', b.cid);
+    addComp(1); who.caught++;
+    log('🧧 ' + who.name + ' 查实 ' + b.sname + ' 于' + dateStr(b.d) + '收受红包 ' + b.amt + '，已没收并计入罚没收入。', 'key');
+  }
+}
+
+// ---------- 机构升级：第一次教学跑证，之后自动打包 ----------
+function upgradeConds(target) {
+  target = target || S.level + 1;
+  const u = D.UPGRADE[target];
+  if (!u) return { target, ok: false, max: true, items: [] };
+  const it = (k, label, cur, need) => ({ k, label, cur, need, ok: cur >= need });
+  const cnt = job => S.staff.filter(s => s.job === job && s.room).length;
+  const items = [
+    it('payers', '独立付费考生（人）', S.stats.payerCount, u.payers), it('fees', '考试报名费累计实收', S.stats.examFees, u.fees),
+    it('seatings', '真实到场考试（人次）', S.stats.seatings, u.seatings), it('trust', '公众信任', Math.floor(S.trust), u.trust), it('comp', '机构合规', Math.floor(S.comp), u.comp),
+    it('proctor', '笔试厅配备监考员', cnt('proctor'), 1), it('grader', '阅卷室配备阅卷员', cnt('grader'), 1),
+  ];
+  return { target, items, ok: items.every(i => i.ok), max: false };
+}
+function startUpgrade() {
+  if (S.up.stage !== 'idle') return fail('已有升级申请在办理中');
+  const cd = upgradeConds();
+  if (cd.max) return fail('已是最高等级');
+  if (!cd.ok) return fail('升级条件尚未全部满足');
+  if (!hasRoom('liaison')) return fail('需先建成' + D.ROOMS.liaison.name);
+  S.up.target = cd.target; S.up.proofs = [0, 0, 0]; S.up.last = '';
+  S.up.stage = S.up.tut ? 'ready' : 'pack';
+  log(S.up.tut ? '🗂 证照档案室已自动汇总升级材料，请派外联跑证员送交上级。' : '🗂 第一次申请升级：材料已装袋。请派一名在岗的外联跑证员（临时合同）送交上级。', 'key');
+  return { ok: true };
+}
+function sendLiaison() {
+  const st = S.up.stage;
+  if (st !== 'pack' && st !== 'ready') return fail('当前没有待送交的材料');
+  const s = S.staff.find(x => x.job === 'liaison' && x.st === 'post');
+  if (!s) return fail('没有在岗的外联跑证员（只能签临时合同，可在公民档案的“雇佣评估”页签约）');
+  let days = 1;
+  if (st === 'ready' && S.up.tut) {
+    days = clamp(3 - Math.round(staffSkill(s) / 40), 1, 3);
+    if (S.staff.some(x => x.job === 'relations' && x.st !== 'off')) days = Math.max(1, days - 1);
+  }
+  S.up.stage = st === 'pack' ? 'trip1' : 'trip2';
+  S.up.back = S.day + days; S.up.sid = s.id;
+  s.st = 'away'; s.back = S.up.back; s.busy = 0;
+  const a = A(s.agent);
+  if (a) setDest(a, OUTSIDE);
+  log('🚶 ' + s.name + ' 带着材料袋出发，预计 ' + dateStr(S.up.back) + ' 返回。', 'info');
+  return { ok: true };
+}
+function stampProof(i) {
+  if (S.up.stage !== 'rejected') return fail('当前不需要补充证明');
+  const pf = PROOFS[i];
+  if (!pf || S.up.proofs[i]) return fail('该证明已盖章');
+  const s = S.staff.find(x => x.job === pf.job && x.room);
+  if (!s) return fail('需要一名已排班的' + D.JOBS[pf.job].name + '签章');
+  S.up.proofs[i] = S.day;
+  log('🈴 ' + s.name + ' 在' + pf.name + '上签章。', 'info');
+  FX.push('stamp');
+  if (S.up.proofs.every(Boolean)) { S.up.stage = 'ready'; log('🗂 三份证明齐全。请再次派外联跑证员送交。', 'key'); }
+  return { ok: true };
+}
+function upgradeReturn() {
+  const up = S.up;
+  if ((up.stage !== 'trip1' && up.stage !== 'trip2') || S.day < up.back) return;
+  if (up.stage === 'trip1') {
+    up.stage = 'rejected';
+    log('📮 外联员带回《补充材料告知书》：材料一次性退回，需补三份盖章证明（真实到考、台账一致、阅卷留痕）。请到【审计与政策】逐项签章。', 'key');
+  } else {
+    up.stage = 'await'; up.visit = S.day + ri(0, 2);
+    log('📮 升级材料已受理。上级复核员将在约 1—3 个营业日内到场复核（紫色制服，不是本中心巡查员）。', 'key');
+  }
+}
+function spawnUpper(role) {
+  const want = role === 'review' ? ['written', 'grading', 'cashier'] : ['review', 'cashier', 'written', 'grading'];
+  const stops = [];
+  for (const t of want) { const rm = roomsOf(t)[0]; if (rm) stops.push({ r: rm.id, lx: 3, ld: 1.4 }); }
+  if (!stops.length) stops.push({ x: 1.5, y: 6 });
+  const a = { id: nid(), k: 'up', role, name: '上级' + (role === 'review' ? '复核员' : '审查员') + ' ' + pick(D.SURNAMES) + '处长', x: OUTSIDE.x, y: OUTSIDE.y, px: OUTSIDE.x, py: OUTSIDE.y,
+    path: [], place: OUTSIDE, stops, si: 0, st: 'walk', t: 0, done: false, bub: '📋' };
+  S.agents.push(a); IDX.a.set(a.id, a);
+  setDest(a, stops[0]);
+  if (role === 'review') S.up.stage = 'visit';
+  log('🟣 ' + a.name + ' 到场' + (role === 'review' ? '复核机构升级申请。' : '例行审查。'), 'key');
+  FX.push('alert');
+}
+function concludeUpper(a) {
+  if (a.done) return;
+  a.done = true;
+  if (a.role === 'review') concludeReview(); else runAudit();
+}
+function updUpper(a) {
+  if (a.path.length) {
+    stepAgent(a);
+    if (!a.path.length) { if (a.st === 'leave') dropAgent(a); else { a.st = 'look'; a.t = 12; } }
+    return;
+  }
+  a.px = a.x; a.py = a.y;
+  if (a.st === 'look' && --a.t <= 0) {
+    a.si++;
+    if (a.si < a.stops.length) { a.st = 'walk'; setDest(a, a.stops[a.si]); }
+    else { concludeUpper(a); a.st = 'leave'; a.bub = ''; setDest(a, OUTSIDE); }
+  }
+}
+function concludeReview() {
+  const up = S.up, cd = upgradeConds(up.target), why = [];
+  for (const it of cd.items) if (!it.ok) why.push(it.label + ' ' + it.cur + '/' + it.need);
+  const onDuty = job => S.staff.some(s => s.job === job && s.room && s.st !== 'off' && s.st !== 'leave');
+  if (cd.ok && !onDuty('proctor')) why.push('复核当日监考员不在岗');
+  if (cd.ok && !onDuty('grader')) why.push('复核当日阅卷员不在岗');
+  up.stage = 'idle'; up.tut = true;
+  if (!why.length && !cd.max) {
+    S.level = up.target; up.last = '';
+    log('🎉 上级复核通过：本中心升为' + D.LEVEL_NAMES[S.level] + '。新增可办理：' + D.COURSES.filter(c => c.level === S.level).map(c => c.short).join('、') + '；对应教材发行授权同步开放。', 'key');
+    FX.push('levelup');
+    for (const c of S.citizens) if (c.status === 'waitLevel' || (!c.plan && !c.agent)) autoPlan(c);
+  } else {
+    up.last = why.join('；');
+    log('🟣 上级复核未通过：' + up.last + '。整改后可重新申请。', 'key');
+  }
+}
+function revokeExemption(c, course, kind) {
+  const rec = c.rec[course];
+  if (kind === 'w') rec.wEx = null; else rec.pEx = null;
+  if (rec.cert) { rec.cert = false; rec.certDay = 0; S.stats.certs--; }
+  beh(c, '免考撤销', '上级认定「' + D.COURSE[course].short + '」' + (kind === 'w' ? '笔试' : '实操') + '免考依据不足，退回重考');
+  if (!c.agent && !c.booking && !c.paper) { c.plan = null; c.study = null; autoPlan(c); }
+}
+function runAudit() {
+  const f = [];
+  let dc = 0, dt = 0, fine = 0;
+  for (const c of S.citizens) {
+    if (c.reported) continue;
+    for (const co of D.COURSES) {
+      const rec = c.rec[co.id];
+      for (const kind of ['w', 'p']) {
+        const ex = kind === 'w' ? rec.wEx : rec.pEx;
+        if (!ex || ex.audited) continue;
+        if (chance(ex.swap ? 0.7 : 0.3)) {
+          revokeExemption(c, co.id, kind);
+          if (ex.swap) { dc -= 8; fine += 200; f.push('查实以免考换取雇佣：' + c.name + '「' + co.short + '」免考撤销，罚款 200'); }
+          else { dc -= 3; f.push(c.name + '「' + co.short + '」免考依据不足，撤销并退回重考'); }
+        } else ex.audited = true;
+      }
+    }
+  }
+  for (const b of S.bribes) {
+    if (b.found || !chance(0.5)) continue;
+    revealBribe(b, '上级审查');
+    dc -= 6; fine += 150;
+    f.push('查实 ' + b.sname + ' 收受红包（本中心未自查发现），罚款 150');
+  }
+  if (S.volUsed) { dc -= 2; dt -= 1; f.push('存在以公益辅助劳动折抵人工成本 ' + S.volUsed + ' 日'); S.volUsed = 0; }
+  if (S.cancelAud) { dc -= Math.min(3, S.cancelAud); f.push('因考务人员缺岗取消场次 ' + S.cancelAud + ' 场'); S.cancelAud = 0; }
+  if (!f.length) { dc += 2; dt += 1; f.push('未发现问题'); }
+  if (fine) cashMove('penalty', -fine, '上级审查罚款');
+  addComp(dc); addTrust(dt);
+  S.audits.push({ d: S.day, f, dc, dt, fine });
+  if (S.audits.length > 30) S.audits.shift();
+  log('🟣 上级例行审查结论：' + f.join('；') + '。合规 ' + (dc >= 0 ? '+' : '') + dc + (fine ? '，罚款 ' + fine : '') + '。', 'key');
+}
+
+// ---------- 政策 ----------
+function togglePolicy(key) {
+  const p = D.POLICIES.find(x => x.key === key);
+  if (!p) return fail('未知政策');
+  if (S.policies[key]) { S.policies[key] = false; log('📜 停用政策「' + p.name + '」。', 'info'); return { ok: true, on: false }; }
+  if (p.once && !S.bought[key]) {
+    if (S.cash < p.once) return fail('现金不足，一次性投入 ' + p.once);
+    cashMove('policy', -p.once, p.name + ' 一次性投入');
+    S.bought[key] = S.day;
+  }
+  S.policies[key] = true;
+  log('📜 启用政策「' + p.name + '」。' + p.satire, 'info');
+  return { ok: true, on: true };
+}
+
+// ---------- 拆除 ----------
+function demolishRoom(rid) {
+  const rm = Rm(rid);
+  if (!rm) return fail('房间不存在');
+  if (rm.q.length || S.agents.some(a => (a.k === 'cit' && a.room === rid) || (a.place && a.place.r === rid && a.k !== 'stf'))) return fail('房间内还有人在办理业务');
+  for (const k in S.sessions) { const ses = S.sessions[k]; if (ses.room === rid && ses.cids.length && ses.st !== 'done' && ses.st !== 'cancel') return fail('该房间还有已预约的考试场次'); }
+  for (const k in S.sessions) if (S.sessions[k].room === rid) delete S.sessions[k];
+  S.today = S.today.filter(k => S.sessions[k]);
+  S.petitions = S.petitions.filter(p => { const c = C(p.cid), a = c && A(c.agent); return a && a.room !== rid; });
+  S.rooms.splice(S.rooms.indexOf(rm), 1); IDX.r.delete(rid);
+  const back = Math.round(D.ROOMS[rm.type].cost * 0.3);
+  for (const s of S.staff) if (s.room === rid) { s.room = 0; s.station = 0; s.busy = 0; moveToPost(s); }
+  for (const s of S.staff) { const a = A(s.agent); if (a && a.place && a.place.r === rid) teleport(a, staffPost(s)); }
+  cashMove('build', back, '拆除 ' + D.ROOMS[rm.type].name + ' 残值');
+  log('🧱 拆除「' + D.ROOMS[rm.type].name + '」，回收残值 ' + back + '。', 'info');
+  return { ok: true };
+}
+
+// ---------- 营业日循环 ----------
+function yearRollover() {
+  S.oldEd = S.edition; S.edition++;
+  let n = 0;
+  for (const sku in S.stock) { n += S.stock[sku]; S.old[sku] = (S.old[sku] || 0) + S.stock[sku]; S.stock[sku] = 0; S.stockCost[sku] = 0; }
+  log('📚 新学年：第 ' + S.edition + ' 版考纲与教辅发布，' + n + ' 本现行库存转入旧版库存（可回收，或启用“旧版教材互认”折价销售）。' + pick(D.EDITION_JOKES), 'key');
+  FX.push('bell');
+}
+function licensing() {
+  for (const c of S.citizens) {
+    if (!c.reported) continue;
+    if (!c.license) {
+      if (S.day <= c.reported) continue;
+      c.license = true; c.licDay = S.day; c.slot = 'wait'; c.slotDay = S.day + ri(3, 8);
+      S.stats.licenses++; addTrust(0.2);
+      beh(c, '电子许可', '上级系统电子签发' + D.FINAL_LICENSE + '（非本中心制证）；进入生命维护名额公开候补');
+      log('🏅 上级系统为 ' + c.name + ' 电子签发' + D.FINAL_LICENSE + '。签发不等于名额，现进入公开候补。', 'key');
+    } else if (c.slot === 'wait' && S.day >= c.slotDay) {
+      c.slot = 'active'; c.annual = { due: S.day + D.YEAR_DAYS, n: 0 };
+      beh(c, '名额激活', '公开候补轮到，生命维护名额激活，可预约修复舱');
+      if (!c.agent) { c.plan = null; autoPlan(c); }
+    } else if (c.slot === 'active' && c.annual && S.day >= c.annual.due) {
+      c.annual.due += D.YEAR_DAYS; c.annual.n++;
+      beh(c, '年度确认', '完成年度 6 学分、守规小测与使用授权确认（原型自动模拟）');
+    }
+  }
+}
+function planArrivals() {
+  S.arr = [];
+  let n = S.day === 1 ? 5 : clamp(Math.round(1.0 + S.trust / 50 + S.level * 0.4 + gauss() * 0.8), 0, 5);
+  const active = S.citizens.reduce((k, c) => k + (c.license ? 0 : 1), 0);
+  if (active > 50 + S.level * 20) n = Math.min(n, 1);
+  for (let i = 0; i < n; i++) newCitizen().plan = { type: 'register', day: S.day };
+  for (const c of S.citizens) {
+    if (c.agent || !c.plan || c.plan.day > S.day) continue;
+    let t = c.plan.type;
+    if ((t === 'examW' || t === 'examP') && (!c.booking || c.booking.day !== S.day)) {
+      c.plan = null; autoPlan(c);
+      if (!c.plan || c.plan.day > S.day || c.plan.type === 'examW' || c.plan.type === 'examP') continue;
+      t = c.plan.type;
+    }
+    const m = t === 'examW' ? D.W_SLOTS[c.booking.slot] - ri(22, 32) : t === 'examP' ? D.P_SLOTS[c.booking.slot] - ri(22, 32) : ri(D.DAY_START + 3, D.DAY_END - 170);
+    S.arr.push({ cid: c.id, m: Math.max(m, D.DAY_START + 1) });
+  }
+  S.arr.sort((a, b) => a.m - b.m || a.cid - b.cid);
+}
+function startDay() {
+  S.minute = D.DAY_START;
+  S.agents = []; IDX.a.clear();
+  S.upQ = [];
+  if (S.day > 1 && (S.day - 1) % D.YEAR_DAYS === 0) yearRollover();
+  const g = S.trust >= 70 ? D.GRANT.high : S.trust < 40 ? D.GRANT.low : D.GRANT.base;
+  cashMove('grant', g, '政府服务定额拨款');
+  S.today = Object.keys(S.sessions).filter(k => S.sessions[k].day === S.day).sort();
+  publishDue();
+  replyApps();
+  upgradeReturn();
+  if (S.up.stage === 'await' && S.day >= S.up.visit) S.upQ.push({ m: ri(600, 680), role: 'review' });
+  if (S.day >= S.nextAudit) { S.upQ.push({ m: ri(700, 800), role: 'audit' }); S.nextAudit = S.day + ri(5, 9); }
+  else if (S.nextAudit === S.day + 1 && chance(0.6)) log('📞 风闻：上级例行审查可能就在这一两天。', 'info');
+  licensing();
+  planArrivals();
+  const coming = {};
+  for (const x of S.arr) coming[x.cid] = 1;
+  for (const s of S.staff) {
+    s.work = 0; s.served = 0; s.busy = 0; s.examUntil = 0; s.rested = false; s.lounge = false; s.why = ''; s.agent = 0;
+    if (s.st === 'away') { if (S.day < s.back) continue; s.back = 0; }
+    s.st = 'off';
+    if (s.cid && coming[s.cid]) {
+      s.st = 'leave'; s.why = '请假办理本人考务';
+      log('🗓 ' + s.name + '（' + D.JOBS[s.job].name + '）今日请假办理本人考务，岗位空缺。', 'info');
+      continue;
+    }
+    if (!s.temp && s.sat < 35 && chance(0.15)) {
+      s.st = 'leave'; s.why = '请假（满意度过低）';
+      log('🗓 ' + s.name + '（' + D.JOBS[s.job].name + '）今日请假，窗口可能无人。', 'bad');
+      continue;
+    }
+    deploy(s);
+    if (s.temp && s.end === S.day) log('📄 ' + s.name + '（' + D.JOBS[s.job].name + '）的临时合同今日到期，可在【员工排班】续签。', 'ask');
+  }
+  S.bcast = ri(D.DAY_START + 30, D.DAY_END - 60);
+}
+function closeVisits() {
+  for (const a of S.agents.slice()) {
+    if (a.k === 'up') { concludeUpper(a); continue; }
+    if (a.k !== 'cit') continue;
+    const c = C(a.cid);
+    if (a.st === 'petition') {
+      const i = S.petitions.findIndex(p => p.cid === c.id);
+      if (i >= 0) { const pt = S.petitions[i]; S.petitions.splice(i, 1); beh(c, '祈愿', '闭馆前未获答复，恢复正常备考'); afterFail(c, pt.course, pt.kind, null, false); }
+    }
+    const opens = openInvs(c);
+    if (opens.length) {
+      if (!a.evade && staffed('cashier')) { for (const v of opens) payInv(c, v, '闭馆前结清'); }
+      else gateCheck(a, c);
+    }
+    c.agent = 0; c.status = 'home';
+  }
+  S.petitions = [];
+}
+function endDay() {
+  closeVisits();
+  for (const key of S.today) { const ses = S.sessions[key]; if (ses && ses.st === 'run') endSession(ses); }
+  S.agents = []; IDX.a.clear();
+  // 居家复习、情绪恢复、兜底规划
+  for (const c of S.citizens) {
+    if (c.study && S.day < c.study.until) { const cur = curCourse(c); if (cur) c.prep[cur] = clamp(c.prep[cur] + c.study.rate, 0, 100); }
+    if (c.patience < 70) c.patience = clamp(c.patience + 2, 0, 100);
+    if (c.stress > 12) c.stress--;
+    if (!c.plan) autoPlan(c);
+  }
+  // 工资、维护、政策成本
+  let wages = 0;
+  for (const s of S.staff) {
+    if (s.st === 'off' || (s.temp && s.st === 'leave')) continue;
+    wages += s.wage;
+  }
+  if (S.volunteer > 0 && wages > 0) { const save = Math.min(35, wages); wages -= save; S.volunteer--; S.volUsed++; S.stats.volSaved += save; }
+  if (wages) cashMove('wage', -wages, '员工工资');
+  let upkeep = 0;
+  for (const r of S.rooms) upkeep += D.ROOMS[r.type].upkeep;
+  if (upkeep) cashMove('upkeep', -upkeep, '房间维护');
+  if (S.policies.aiGrading) cashMove('policy', -30, 'AI 辅助阅卷授权费');
+  if (S.policies.eDocs) cashMove('policy', -10, '电子材料系统维护');
+  S.stats.overhead += wages + upkeep;
+  integritySweep();
+  // 满意度、怠工投诉、临时工流失与合同到期
+  const lounge = hasRoom('lounge');
+  for (const s of S.staff.slice()) {
+    if (s.st !== 'off' && s.st !== 'leave') {
+      let t = 55 + (s.wage - s.expect) * 0.7;
+      if (s.st === 'away') t += 3;
+      else if (s.rest === 'N' || !s.rested) t -= 14; else if (lounge && s.lounge) t += 6;
+      if (s.work > 380) t -= 8;
+      if (s.bonusDay === S.day) t += 14;
+      s.sat = clamp(Math.round(s.sat + (t - s.sat) * 0.35), 0, 100);
+    }
+    if (!s.temp) {
+      if (s.sat < 25 && chance(0.2)) { addTrust(-1); log('😠 ' + s.name + '（' + D.JOBS[s.job].name + '）长期不满，窗口态度引发投诉：信任 -1。', 'bad'); }
+      continue;
+    }
+    s.lowDays = s.sat < 20 ? s.lowDays + 1 : 0;
+    const c = s.cid && C(s.cid);
+    if (s.lowDays >= 2 && s.st !== 'away') {
+      if (c) beh(c, '离职', '因长期不满主动解除「' + D.JOBS[s.job].name + '」临时合同');
+      log('🚪 ' + s.name + '（' + D.JOBS[s.job].name + '）满意度过低，主动离职。', 'key');
+      removeStaff(s);
+    } else if (S.day >= s.end && s.st !== 'away') {
+      if (c) beh(c, '合同期满', '「' + D.JOBS[s.job].name + '」临时合同期满');
+      log('📄 ' + s.name + '（' + D.JOBS[s.job].name + '）临时合同期满离岗。', 'key');
+      removeStaff(s);
+    }
+  }
+  // 信任与合规的缓慢变化
+  const dd = daily(S.day);
+  if (dd.esc > 0) addComp(-0.3); else if (S.comp < 70) addComp(0.2);
+  if (dd.wn) { const avg = dd.ws / dd.wn; if (avg < 12) addTrust(0.3); else if (avg > 30) addTrust(-0.5); }
+  addTrust((55 - S.trust) * 0.03);
+  addComp((65 - S.comp) * 0.02);
+  let soft = 0;
+  for (const k of ['oldEd', 'freeConsult', 'alienEquiv', 'expRecog', 'eDocs']) if (S.policies[k]) soft += 0.15;
+  if (soft && S.trust < 85) addTrust(soft);
+  if (S.staff.some(s => s.job === 'relations') && S.comp < 78) addComp(0.3);
+  if (S.cash < 0) { addTrust(-0.5); log('💸 现金为负：供应商与员工开始议论，信任下降。请削减开支或等待拨款。', 'bad'); }
+  // 清理旧数据（个人发票与行为履历永久保留）
+  for (const k in S.sessions) if (S.sessions[k].day < S.day - 2) delete S.sessions[k];
+  if (S.papers.length > 400) { S.papers = S.papers.filter(p => !p.chk || p.chk > S.day - 10); IDX.p.clear(); S.papers.forEach(p => IDX.p.set(p.id, p)); }
+  let cut = 0;
+  while (cut < S.ledger.length && S.ledger[cut].d < S.day - 30) { S.ledgerBase += S.ledger[cut].a; cut++; }
+  if (cut) S.ledger.splice(0, cut);
+  let inc = 0, exp = 0;
+  for (const k in dd.inc) inc += dd.inc[k];
+  for (const k in dd.exp) exp += dd.exp[k];
+  S.lastReport = { day: S.day, inc, exp, net: inc + exp, due: dd.due, esc: dd.esc, vis: dd.vis, cash: S.cash };
+  S.day++;
+}
+function tick() {
+  S.minute++;
+  const m = S.minute;
+  while (S.arr.length && S.arr[0].m <= m) {
+    const c = C(S.arr.shift().cid);
+    if (c && c.plan && !c.agent) spawnCitizen(c);
+  }
+  for (let i = S.upQ.length - 1; i >= 0; i--) if (S.upQ[i].m <= m) { spawnUpper(S.upQ[i].role); S.upQ.splice(i, 1); }
+  for (const a of S.agents.slice()) {
+    if (!IDX.a.has(a.id)) continue;
+    if (a.k === 'cit') updCitizen(a); else if (a.k === 'stf') updStaffAgent(a); else updUpper(a);
+  }
+  for (const rm of S.rooms) updRoomService(rm);
+  updExams();
+  updGrading();
+  if (m === S.bcast) log('📢 ' + pick(D.BROADCASTS), 'cast');
+  if (m >= D.DAY_END) { endDay(); startDay(); FX.push('day'); return true; }
+  return false;
+}
+function runDays(n) {
+  const target = S.day + n;
+  let guard = n * 600 + 10;
+  while (S.day < target && guard-- > 0) tick();
+}
+function runToKey(maxDays) {
+  const k0 = S.keySeq, target = S.day + (maxDays || 5);
+  let guard = (maxDays || 5) * 600 + 10;
+  while (S.day < target && S.keySeq === k0 && guard-- > 0) tick();
+  return S.keySeq !== k0;
+}
+function keyEvents() {
+  const ev = [];
+  const add = (d, t) => { if (d >= S.day) ev.push({ d, t }); };
+  const bySes = {};
+  for (const k in S.sessions) {
+    const ses = S.sessions[k];
+    if (ses.day < S.day || !ses.cids.length || ses.st === 'done' || ses.st === 'cancel') continue;
+    const t = ses.kind === 'w' ? timeStr(D.W_SLOTS[ses.slot]) + ' ' + D.COURSE[ses.course].short + '笔试 ' + ses.cids.length + '/' + D.W_SEATS : timeStr(D.P_SLOTS[ses.slot]) + ' 实操 ' + ses.cids.length + '/' + D.P_STATIONS;
+    (bySes[ses.day] = bySes[ses.day] || []).push(t);
+  }
+  for (const d in bySes) add(+d, '考试：' + bySes[d].sort().join('，'));
+  for (const s of S.staff) if (s.temp) add(s.end, s.name + '（' + D.JOBS[s.job].name + '）合同到期');
+  for (const ap of S.apps) if (!ap.cand) add(ap.day + 1, '人事编制署答复「' + D.JOBS[ap.job].name + '」申请');
+  if (S.up.stage === 'trip1' || S.up.stage === 'trip2') add(S.up.back, '外联跑证员返回');
+  if (S.up.stage === 'await') add(S.up.visit, '上级复核员最早到场日');
+  add(Math.ceil(S.day / D.YEAR_DAYS) * D.YEAR_DAYS + 1, '新学年：考纲与教辅换版');
+  let pend = 0;
+  for (const p of S.papers) if (p.pub && !p.chk) pend++;
+  ev.sort((a, b) => a.d - b.d);
+  return { list: ev.slice(0, 12), unchecked: pend, grading: S.gq.length };
+}
+
+// ---------- 开局、改名、存档 ----------
+function newState(player, center, seed) {
+  S = {
+    v: D.VERSION, seed: (seed == null ? (Date.now() % 2147483647) : seed) | 0, nextId: 1,
+    player: cleanName(player, 24) || '无名局长', center: cleanName(center, 28) || '永生办证中心',
+    day: 1, minute: D.DAY_START, cash: D.START_CASH, trust: 55, comp: 65, level: 1, edition: 1, oldEd: 0,
+    rooms: [], staff: [], citizens: [], agents: [], papers: [], gq: [], sessions: {}, today: [], arr: [], upQ: [], petitions: [],
+    stock: {}, stockCost: {}, old: {}, policies: {}, bought: {}, ledger: [], ledgerBase: 0, daily: {}, tot: {}, log: [], logSeq: 0, keySeq: 0,
+    stats: { visits: 0, overhead: 0, examFees: 0, payers: {}, payerCount: 0, consult: 0, escaped: 0, escapedAmt: 0, intercepted: 0, seatings: 0, certs: 0, books: 0,
+      exemptions: 0, equiv: 0, cancelled: 0, fines: 0, cheatsCaught: 0, licenses: 0, bribesFound: 0, volSaved: 0 },
+    encour: { day: 0, n: 0 }, volunteer: 0, volUsed: 0, cancelAud: 0, apps: [], bribes: [], audits: [], nextAudit: 0, bcast: 0,
+    up: { stage: 'idle', target: 0, proofs: [0, 0, 0], back: 0, visit: 0, sid: 0, tut: false, last: '' }, lastReport: null,
+  };
+  reindex();
+  S.nextAudit = ri(6, 9);
+  const init = [['reception', 0], ['review', 1], ['cashier', 2], ['bookstore', 3], ['written', 6], ['practical', 7], ['grading', 8], ['lounge', 9]];
+  for (const [t, lot] of init) addRoom(t, lot);
+  for (const job of ['receptionist', 'reviewer', 'cashier', 'clerk', 'proctor', 'examiner', 'grader']) {
+    const p = makePerson(), s = addStaff(p, job, false, D.JOBS[job].wage);
+    s.quality = ri(58, 82); s.origin = p.job;
+  }
+  const g = newCitizen('office');
+  g.skills.inspect = Math.max(g.skills.inspect, 62); g.tr.principle = Math.max(g.tr.principle, 55);
+  g.firstDay = 1; g.plan = { type: 'register', day: 4 };
+  const gs = addStaff(g, 'inspector', true, D.JOBS.inspector.wage);
+  gs.end = 10; g.staff = gs.id;
+  beh(g, '签约', '开局即签订「巡查员」临时合同：日薪 ' + gs.wage + '，至 ' + dateStr(gs.end) + '（本人也是考生，办理考务时会请假）');
+  for (const [sku, n] of [['TC01', 10], ['TC02', 6], ['GC01', 8], ['GC02', 6]]) { S.stock[sku] = n; S.stockCost[sku] = n * D.BOOKS[sku].cost; }
+  log('🏛 ' + S.center + ' 开门营业。局长：' + S.player + '。初始为一级资质，可办理「再生生命工程」「智能系统伦理」两项认证。', 'key');
+  startDay();
+  return S;
+}
+function rename(player, center) {
+  const p = cleanName(player, 24), c = cleanName(center, 28);
+  if (p) S.player = p;
+  if (c) S.center = c;
+  return { ok: true };
+}
+function serialize() { return JSON.stringify({ app: 'immortality-bureau', v: D.VERSION, S }); }
+function load(json) {
+  const o = typeof json === 'string' ? JSON.parse(json) : json;
+  if (!o || o.app !== 'immortality-bureau' || !o.S || !Array.isArray(o.S.citizens) || !Array.isArray(o.S.rooms)) throw new Error('不是有效的《永生办证中心》存档');
+  if (o.v !== D.VERSION) throw new Error('存档版本 V' + o.v + ' 与当前 V' + D.VERSION + ' 不兼容');
+  S = o.S;
+  S.player = cleanName(S.player, 24) || '无名局长'; S.center = cleanName(S.center, 28) || '永生办证中心';
+  reindex();
+  FX.length = 0;
+  return true;
+}
+function ledgerSum() { let n = S.ledgerBase; for (const e of S.ledger) n += e.a; return n; }
+
+const API = {
+  D, FX, get S() { return S; },
+  newState, serialize, load, rename, tick, runDays, runToKey, keyEvents, ledgerSum,
+  buildRoom, demolishRoom, lotFree, assignStaff, setDuty, setRest, bonus, dismiss, applyFormal, acceptCandidate, declineCandidate,
+  offerTemp, offerChance, renew, buyStock, recycleOld, bookAllowed, togglePolicy, encourage, encourLeft, petitionDecide, reorderMid,
+  startUpgrade, sendLiaison, stampProof, upgradeConds,
+  totals, examView, estPass, curCourse, nextExam, certCount, canEnroll, courseOrder, dayNet, dateStr, dateOf, timeStr, esc, cleanName,
+  staffEff, staffSkill, gateWhy, zoneOf, bribeEligible, formalCount,
+  geo: { LOT_W, LOT_D, HALL_W, LOT_COLS, LOT_COUNT, ROWS, MAP, OUTSIDE, POSTS, CUST, SEATS, STATIONS, LOUNGE, lotGeom, roomPos },
+  TRAIT_NAMES, ENC, PROOFS, TEMP_DAYS,
+  C, St, A, Rm, PAPER,
+  _: { newCitizen, makePerson, spawnCitizen, invoice, payInv, openInvs, markEscaped, visitFee, consultFee, cashMove, bookExam, reserve, sellBook, autoPlan, afterFail, afterCert,
+    grantExemption, publish, publishDue, makePaper, gateCheck, gateInspector, tryBribe, addStaff, deploy, removeStaff, startDay, endDay, runAudit, concludeReview, spawnUpper,
+    yearRollover, licensing, examMean, findWritten, cancelSession, doCheck, staffed, hasRoom, roomsOf, addRoom, R, ri, chance, integritySweep, revokeExemption },
+};
+
+return API;
+})();
+// ===== Canvas 等距单层地图渲染 =====
+const RENDER = (function () {
+  const G = IB.geo, D = IB.D;
+  const HW = 22, HH = 11, WALL = 24;
+  const PAD = 46, TOP = 78;
+  const OX = G.MAP.h * HW + PAD, OY = TOP;
+  const LW = (G.MAP.w + G.MAP.h) * HW + PAD * 2, LH = (G.MAP.w + G.MAP.h) * HH + TOP + 40;
+  let cv, ctx, dpr = 1, cw = 0, ch = 0;
+  const view = { zoom: 1, px: 0, py: 0, s: 1, tx: 0, ty: 0 };
+  const st = { sel: null, hover: null, hoverLot: -1, placing: '', t: 0 };
+
+  const P = (x, y) => [OX + (x - y) * HW, OY + (x + y) * HH];
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    if (f < 1) { r *= f; g *= f; b *= f; } else { r += (255 - r) * (f - 1); g += (255 - g) * (f - 1); b += (255 - b) * (f - 1); }
+    return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
+  }
+  function poly(pts, fill, stroke, lw) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+  }
+  function floor(x0, y0, x1, y1, fill, stroke, lw) {
+    poly([P(x0, y0), P(x1, y0), P(x1, y1), P(x0, y1)], fill, stroke, lw);
+  }
+  function box(x0, y0, x1, y1, h, col, z) {
+    z = z || 0;
+    const b = P(x1, y0), c = P(x1, y1), d = P(x0, y1), a = P(x0, y0);
+    const up = p => [p[0], p[1] - h - z], dn = p => [p[0], p[1] - z];
+    poly([dn(d), dn(c), up(c), up(d)], shade(col, 0.82));
+    poly([dn(c), dn(b), up(b), up(c)], shade(col, 0.68));
+    poly([up(a), up(b), up(c), up(d)], col, 'rgba(255,255,255,.55)', 0.8);
+  }
+  function wallSeg(xa, ya, xb, yb, col, glass) {
+    const a = P(xa, ya), b = P(xb, yb);
+    poly([a, b, [b[0], b[1] - WALL], [a[0], a[1] - WALL]], col);
+    if (glass) poly([[a[0], a[1] - 9], [b[0], b[1] - 9], [b[0], b[1] - WALL + 3], [a[0], a[1] - WALL + 3]], 'rgba(190,232,255,.55)');
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(a[0], a[1] - WALL); ctx.lineTo(b[0], b[1] - WALL); ctx.stroke();
+  }
+  function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function plate(cx, cy, lines, opt) {
+    opt = opt || {};
+    ctx.font = (opt.bold ? '700 ' : '600 ') + (opt.size || 11) + 'px "PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
+    let w = 0;
+    for (const l of lines) w = Math.max(w, ctx.measureText(l.t).width);
+    const lh = (opt.size || 11) + 4, h = lines.length * lh + 6;
+    w += 14;
+    rr(cx - w / 2, cy - h, w, h, 7);
+    ctx.fillStyle = opt.bg || 'rgba(255,255,255,.92)'; ctx.fill();
+    ctx.strokeStyle = opt.border || 'rgba(120,150,140,.55)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    lines.forEach((l, i) => { ctx.fillStyle = l.c || '#35524a'; ctx.fillText(l.t, cx, cy - h + 3 + lh * (i + 0.5)); });
+  }
+
+  // 家具：[lx, ld, 宽, 深, 高, 颜色]（房间局部坐标，ld 为距门墙的进深）
+  const FURN = {
+    reception: [[3, 3.15, 5.2, 0.5, 12, '#8fd3c1'], [3, 4.72, 5.4, 0.3, 20, '#d5ede6']],
+    review: [[3, 3.15, 5.2, 0.5, 12, '#9cc7e6'], [1, 4.7, 1.3, 0.35, 22, '#c9b79c'], [5, 4.7, 1.3, 0.35, 22, '#c9b79c']],
+    cashier: [[3, 3.15, 5.2, 0.5, 13, '#f2b866'], [3, 4.72, 2.2, 0.3, 18, '#e3cfa0']],
+    report: [[3, 3.15, 5.2, 0.5, 12, '#7fcdbb'], [4.9, 4.65, 1.3, 0.4, 24, '#5aa9a0']],
+    bookstore: [[4.9, 2.55, 1.5, 0.5, 11, '#f09a80'], [1.2, 2.55, 1.5, 0.5, 11, '#f09a80'], [1.2, 4.68, 1.8, 0.36, 24, '#c98f6b'], [3, 4.68, 1.4, 0.36, 24, '#d9a37e'], [4.8, 4.68, 1.8, 0.36, 24, '#c98f6b']],
+    written: [[3, 3.95, 1.3, 0.36, 12, '#8aa5de']].concat(G.SEATS.map(s => [s[0], s[1] + 0.48, 0.95, 0.42, 8, '#ecdcb9'])),
+    practical: [[1.6, 3.25, 1.7, 0.6, 10, '#b9d68a'], [4.4, 3.25, 1.7, 0.6, 10, '#b9d68a']],
+    grading: [[1.6, 2.9, 1.7, 0.6, 10, '#b9a3dc'], [4.4, 2.9, 1.7, 0.6, 10, '#b9a3dc'], [3, 4.72, 2, 0.3, 20, '#d9cdea']],
+    tutoring: [[1.6, 3.25, 1.1, 0.45, 9, '#f0d67a'], [4.4, 3.25, 1.1, 0.45, 9, '#f0d67a'], [3, 3.2, 0.14, 2.6, 17, '#eee2b0']],
+    counsel: [[3.25, 3.4, 0.5, 0.9, 7, '#f7cfe0'], [1.3, 4.5, 1.6, 0.5, 9, '#f3bcd6'], [5.2, 4.5, 0.6, 0.6, 15, '#9bcf9a']],
+    pod: [[2.6, 3.5, 1.9, 1.1, 9, '#8fe3e0'], [4.9, 3.35, 0.9, 0.5, 13, '#5fb9c4']],
+    liaison: [[1.6, 2.9, 1.5, 0.5, 10, '#cdbf9a'], [4.4, 2.9, 1.5, 0.5, 10, '#cdbf9a'], [3, 4.72, 5, 0.3, 24, '#b8a880']],
+    petition: [[3, 4.2, 1.8, 0.6, 16, '#c9a6e3'], [1.2, 4.5, 0.5, 0.5, 20, '#e7d4f5'], [4.8, 4.5, 0.5, 0.5, 20, '#e7d4f5']],
+    lounge: [[3, 4.6, 4.6, 0.5, 9, '#e2c9a0'], [3, 3.0, 1.3, 0.7, 6, '#c9a57a'], [5.4, 0.6, 0.5, 0.5, 14, '#9bcf9a']],
+  };
+
+  function roomStatus(rm) {
+    const S = IB.S, def = D.ROOMS[rm.type], lines = [{ t: def.short }];
+    const stf = S.staff.filter(s => s.room === rm.id);
+    if (def.job) {
+      if (!stf.length) lines.push({ t: '⚠ 未排班', c: '#d9534f' });
+      else if (!stf.some(s => s.st === 'post')) lines.push({ t: stf.some(s => s.st === 'rest' || s.st === 'toRest' || s.st === 'toPost') ? '☕ 休息中' : '⚠ 今日缺岗', c: '#d98a2b' });
+    }
+    if (rm.q.length) lines.push({ t: '排队 ' + rm.q.length, c: rm.q.length > 4 ? '#d9534f' : '#5b7a70' });
+    if (rm.type === 'written' || rm.type === 'practical') {
+      for (const k of S.today) {
+        const ses = S.sessions[k];
+        if (!ses || ses.room !== rm.id || !ses.cids.length || ses.st === 'done' || ses.st === 'cancel') continue;
+        const t = ses.kind === 'w' ? D.W_SLOTS[ses.slot] : D.P_SLOTS[ses.slot];
+        lines.push({ t: (ses.st === 'run' ? '考试中 ' : IB.timeStr(t) + ' ') + (ses.kind === 'w' ? D.COURSE[ses.course].short : '实操') + ' ' + ses.cids.length + '/' + (ses.kind === 'w' ? D.W_SEATS : D.P_STATIONS), c: ses.st === 'run' ? '#2f6fe0' : '#5b7a70' });
+        break;
+      }
+    }
+    if (rm.type === 'grading' && S.gq.length) lines.push({ t: '待批 ' + S.gq.length, c: S.gq.length > 12 ? '#d9534f' : '#5b7a70' });
+    if (rm.type === 'petition' && S.petitions.length) lines.push({ t: '🙏 待裁决 ' + S.petitions.length, c: '#8a4fc2' });
+    return lines;
+  }
+
+  function agentColor(a) {
+    const S = IB.S;
+    if (a.k === 'up') return { body: '#7b3fc4', head: '#f3d9bf', hat: '#4b217f', tag: '上级' };
+    if (a.k === 'stf') {
+      const s = IB.St(a.sid);
+      if (!s) return { body: '#999', head: '#f3d9bf' };
+      const j = D.JOBS[s.job];
+      return { body: j.color, head: s.species === 'alien' ? 'hsl(' + s.hue + ',55%,72%)' : '#f6dcc0', hat: s.job === 'inspector' ? '#1d4fb0' : null, alien: s.species === 'alien', badge: true };
+    }
+    const c = IB.C(a.cid);
+    if (!c) return { body: '#bbb', head: '#f3d9bf' };
+    return { body: 'hsl(' + c.hue + ',48%,70%)', head: c.species === 'alien' ? 'hsl(' + ((c.hue + 120) % 360) + ',55%,74%)' : '#f6dcc0', hair: 'hsl(' + c.hue + ',30%,32%)', alien: c.species === 'alien' };
+  }
+  function drawAgent(a, x, y) {
+    const p = P(x, y), col = agentColor(a), sx = p[0], sy = p[1];
+    const selected = st.sel && st.sel === a.id, hov = st.hover === a.id;
+    ctx.fillStyle = 'rgba(60,80,70,.22)';
+    ctx.beginPath(); ctx.ellipse(sx, sy, 7, 3.4, 0, 0, 6.3); ctx.fill();
+    if (selected || hov) { ctx.strokeStyle = selected ? '#ff7a4d' : '#3fae93'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, sy, 10, 5, 0, 0, 6.3); ctx.stroke(); }
+    const tall = a.k === 'up' ? 3 : 0, bob = a.path && a.path.length ? Math.sin(st.t * 12 + a.id) * 1.1 : 0;
+    rr(sx - 5, sy - 14 - tall + bob, 10, 13 + tall, 4.5);
+    ctx.fillStyle = col.body; ctx.fill();
+    ctx.strokeStyle = 'rgba(40,60,55,.35)'; ctx.lineWidth = 0.8; ctx.stroke();
+    if (col.badge) { ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(sx - 1.5, sy - 10 + bob, 3, 3); }
+    const hy = sy - 18 - tall + bob;
+    ctx.fillStyle = col.head; ctx.beginPath(); ctx.arc(sx, hy, 4.6, 0, 6.3); ctx.fill();
+    ctx.strokeStyle = 'rgba(40,60,55,.35)'; ctx.stroke();
+    if (col.alien) {
+      ctx.strokeStyle = col.head; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(sx - 2, hy - 4); ctx.lineTo(sx - 4, hy - 9); ctx.moveTo(sx + 2, hy - 4); ctx.lineTo(sx + 4, hy - 9); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sx - 4, hy - 9, 1.5, 0, 6.3); ctx.arc(sx + 4, hy - 9, 1.5, 0, 6.3); ctx.fill();
+    } else if (col.hat) {
+      ctx.fillStyle = col.hat; rr(sx - 5.5, hy - 6.5, 11, 4.2, 2); ctx.fill();
+      ctx.fillRect(sx - 6.5, hy - 3, 13, 1.4);
+    } else if (col.hair) {
+      ctx.fillStyle = col.hair; ctx.beginPath(); ctx.arc(sx, hy - 0.8, 4.7, Math.PI, 0); ctx.fill();
+    }
+    if (a.k === 'up') { ctx.fillStyle = '#fff'; ctx.fillRect(sx + 4, sy - 12, 5, 7); ctx.strokeStyle = '#4b217f'; ctx.strokeRect(sx + 4, sy - 12, 5, 7); }
+    if (a.bub) {
+      ctx.font = '12px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#333';
+      ctx.fillText(a.bub, sx, hy - 9);
+    }
+    if (col.tag || selected || hov) {
+      const name = a.k === 'up' ? a.name : a.k === 'stf' ? (IB.St(a.sid) || {}).name : (IB.C(a.cid) || {}).name;
+      if (name) plate(sx, hy - (a.bub ? 22 : 9), [{ t: name, c: a.k === 'up' ? '#5b2a9c' : '#35524a' }], { size: 10, bg: a.k === 'up' ? 'rgba(240,228,255,.95)' : 'rgba(255,255,255,.95)', border: a.k === 'up' ? '#a77be0' : null });
+    }
+  }
+
+  function draw(alpha) {
+    if (!ctx || !IB.S) return;
+    const S = IB.S;
+    st.t = performance.now() / 1000;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const bg = ctx.createLinearGradient(0, 0, 0, ch);
+    bg.addColorStop(0, '#fdf6e9'); bg.addColorStop(1, '#eaf5ef');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, cw, ch);
+    view.s = Math.min(cw / LW, ch / LH) * view.zoom;
+    view.tx = (cw - LW * view.s) / 2 + view.px; view.ty = (ch - LH * view.s) / 2 + view.py;
+    ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * view.tx, dpr * view.ty);
+
+    // 地基与地面
+    const W = G.MAP.w, H = G.MAP.h;
+    poly([P(0, 0), P(W, 0), P(W, H), P(0, H)].map((p, i) => [p[0], p[1] + 9]), '#cfd9cf');
+    floor(0, 0, W, H, '#f4efe2', '#cdbfa5', 1.2);
+    floor(0, 0, G.HALL_W, H, '#fbf3df');
+    for (const r of [5, 12]) floor(G.HALL_W, r, W, r + 2, '#f7eedb');
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = 'rgba(190,170,130,.6)'; ctx.lineWidth = 1;
+    for (const y of [6, 13]) { const a = P(G.HALL_W, y), b = P(W, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+    ctx.setLineDash([]);
+    // 大门与离场线
+    floor(0, 8.6, 1.2, 10.4, '#ffd9c7');
+    ctx.setLineDash([4, 3]); ctx.strokeStyle = '#e2603e'; ctx.lineWidth = 1.6;
+    { const a = P(1.2, 8.2), b = P(1.2, 10.8); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+    ctx.setLineDash([]);
+    floor(-1.4, 8.9, 0, 10.1, '#e8dcc4', '#cdbfa5', 1);
+
+    const byLot = {};
+    for (const rm of S.rooms) byLot[rm.lot] = rm;
+    for (let lot = 0; lot < G.LOT_COUNT; lot++) {
+      const g = G.lotGeom(lot), rm = byLot[lot];
+      const x0 = g.x, y0 = g.y, x1 = g.x + G.LOT_W, y1 = g.y + G.LOT_D;
+      if (rm) {
+        const col = D.ROOMS[rm.type].color;
+        floor(x0 + 0.06, y0 + 0.06, x1 - 0.06, y1 - 0.06, shade(col, 1.45), shade(col, 0.8), 1.2);
+        const dp = G.roomPos(rm, 3, 0);
+        floor(dp.x - 0.5, dp.y - 0.28, dp.x + 0.5, dp.y + 0.28, shade(col, 0.9));
+      } else {
+        const hot = st.hoverLot === lot;
+        ctx.setLineDash([6, 5]);
+        floor(x0 + 0.25, y0 + 0.25, x1 - 0.25, y1 - 0.25, hot ? 'rgba(63,174,147,.22)' : (st.placing ? 'rgba(63,174,147,.10)' : 'rgba(255,255,255,.35)'), hot ? '#3fae93' : '#c9bfa8', hot ? 2 : 1.2);
+        ctx.setLineDash([]);
+        const c = P(x0 + 3, y0 + 2.5);
+        ctx.font = '600 12px "PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = hot ? '#2f8f78' : '#b3a88f';
+        ctx.fillText(st.placing ? '点击在此建造' : '＋ 空地', c[0], c[1]);
+      }
+    }
+
+    // 需要按进深排序的物件：墙段、家具、人物
+    const items = [];
+    const add = (d, f) => items.push({ d, f });
+    for (let y = 0; y < H; y++) {
+      if (y >= 8.5 && y < 10.5) continue;
+      add(y + 0.02, () => wallSeg(0, y + 1, 0, y, '#e9dfc8', true));
+    }
+    for (let x = 0; x < G.HALL_W; x++) add(x + 0.02, () => wallSeg(x, 0, x + 1, 0, '#e9dfc8', true));
+    for (const rm of S.rooms) {
+      const g = G.lotGeom(rm.lot), def = D.ROOMS[rm.type], col = shade(def.color, 0.93);
+      const x0 = g.x, y0 = g.y;
+      const segs = g.door === 'N' ? [[0, 1], [1, 2], [2, 2.5], [3.5, 4], [4, 5], [5, 6]] : [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]];
+      for (const sg of segs) add(x0 + sg[0] + y0 + 0.01, () => wallSeg(x0 + sg[0], y0, x0 + sg[1], y0, col, true));
+      for (let i = 0; i < G.LOT_D; i++) add(x0 + y0 + i + 0.01, () => wallSeg(x0, y0 + i + 1, x0, y0 + i, shade(def.color, 0.86), false));
+      for (const f of FURN[rm.type] || []) {
+        const c = G.roomPos(rm, f[0], f[1]);
+        add(c.x + c.y + (f[3] + f[2]) * 0.2, () => box(c.x - f[2] / 2, c.y - f[3] / 2, c.x + f[2] / 2, c.y + f[3] / 2, f[4], f[5]));
+      }
+      if (rm.type === 'grading' && S.gq.length) {
+        const c = G.roomPos(rm, 3, 2.9), n = Math.min(10, Math.ceil(S.gq.length / 2));
+        add(c.x + c.y + 0.3, () => box(c.x - 0.3, c.y - 0.2, c.x + 0.3, c.y + 0.2, 2 + n * 2, '#ffffff'));
+      }
+    }
+    for (const a of S.agents) {
+      const x = a.px + (a.x - a.px) * alpha, y = a.py + (a.y - a.py) * alpha;
+      a._sx = x; a._sy = y;
+      add(x + y + 0.25, () => drawAgent(a, x, y));
+    }
+    items.sort((p, q) => p.d - q.d);
+    for (const it of items) it.f();
+
+    // 招牌与房间标签
+    for (const rm of S.rooms) {
+      const g = G.lotGeom(rm.lot), p = P(g.x + 3, g.y);
+      plate(p[0], p[1] - WALL - 4, roomStatus(rm), { size: 10.5, border: shade(D.ROOMS[rm.type].color, 0.7) });
+    }
+    const sp = P(0, 0);
+    plate(sp[0] + 8, sp[1] - WALL - 6, [{ t: S.center, c: '#fff' }, { t: D.LEVEL_NAMES[S.level].split(' · ')[0] + '资质 · 局长 ' + S.player, c: '#ffe9df' }], { size: 13, bold: true, bg: '#e9795d', border: '#c75f45' });
+    const gp = P(-0.7, 9.5);
+    plate(gp[0], gp[1] - 6, [{ t: '出入口' }], { size: 10 });
+    const lp = P(1.25, 11.1);
+    ctx.font = '600 9px sans-serif'; ctx.fillStyle = '#e2603e'; ctx.textAlign = 'center'; ctx.fillText('离场线', lp[0], lp[1] + 6);
+  }
+
+  function toWorld(mx, my) {
+    const lx = (mx - view.tx) / view.s, ly = (my - view.ty) / view.s;
+    const u = (lx - OX) / HW, v = (ly - OY) / HH;
+    return { x: (u + v) / 2, y: (v - u) / 2, lx, ly };
+  }
+  function pick(mx, my) {
+    const S = IB.S, w = toWorld(mx, my);
+    let best = null, bd = 16;
+    for (const a of S.agents) {
+      const p = P(a._sx == null ? a.x : a._sx, a._sy == null ? a.y : a._sy);
+      const d = Math.hypot(p[0] - w.lx, p[1] - 10 - w.ly);
+      if (d < bd) { bd = d; best = a; }
+    }
+    if (best) return { agent: best };
+    if (w.x >= G.HALL_W && w.x < G.MAP.w) {
+      const col = Math.floor((w.x - G.HALL_W) / G.LOT_W);
+      for (let r = 0; r < G.ROWS.length; r++) {
+        if (w.y >= G.ROWS[r].y && w.y < G.ROWS[r].y + G.LOT_D) {
+          const lot = r * G.LOT_COLS + col;
+          return { lot, room: S.rooms.find(q => q.lot === lot) || null };
+        }
+      }
+    }
+    return {};
+  }
+  function resize() {
+    if (!cv) return;
+    const r = cv.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    cw = Math.max(50, r.width); ch = Math.max(50, r.height);
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  }
+  function init(canvas, cb) {
+    cv = canvas; ctx = cv.getContext('2d');
+    resize();
+    window.addEventListener('resize', resize);
+    let drag = null, moved = false;
+    const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, px: view.px, py: view.py }; moved = false; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove', e => {
+      if (drag) {
+        const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+        if (moved) { view.px = drag.px + dx; view.py = drag.py + dy; cv.style.cursor = 'grabbing'; }
+        return;
+      }
+      if (!IB.S) return;
+      const [mx, my] = pos(e), hit = pick(mx, my);
+      st.hover = hit.agent ? hit.agent.id : null;
+      st.hoverLot = hit.agent || hit.lot == null || hit.room ? -1 : hit.lot;
+      cv.style.cursor = hit.agent || hit.lot != null ? 'pointer' : 'grab';
+    });
+    cv.addEventListener('pointerup', e => {
+      const was = moved;
+      drag = null; moved = false; cv.style.cursor = 'grab';
+      if (was || !IB.S) return;
+      const [mx, my] = pos(e), hit = pick(mx, my);
+      if (hit.agent) cb.onAgent(hit.agent);
+      else if (hit.lot != null) cb.onLot(hit.lot, hit.room);
+    });
+    cv.addEventListener('pointerleave', () => { st.hover = null; st.hoverLot = -1; });
+    cv.addEventListener('wheel', e => {
+      e.preventDefault();
+      const [mx, my] = pos(e), z0 = view.zoom, z1 = Math.max(0.7, Math.min(3.2, z0 * (e.deltaY < 0 ? 1.12 : 0.89)));
+      if (z1 === z0) return;
+      // 以指针为中心缩放
+      const w = toWorld(mx, my);
+      view.zoom = z1;
+      const s1 = Math.min(cw / LW, ch / LH) * z1;
+      view.px = mx - w.lx * s1 - (cw - LW * s1) / 2;
+      view.py = my - w.ly * s1 - (ch - LH * s1) / 2;
+    }, { passive: false });
+  }
+  function zoomBy(f) { view.zoom = Math.max(0.7, Math.min(3.2, view.zoom * f)); }
+  function resetView() { view.zoom = 1; view.px = 0; view.py = 0; }
+  function focus(x, y) {
+    const p = P(x, y), s = Math.min(cw / LW, ch / LH) * view.zoom;
+    view.px = cw / 2 - p[0] * s - (cw - LW * s) / 2;
+    view.py = ch / 2 - p[1] * s - (ch - LH * s) / 2;
+  }
+  return { init, draw, resize, zoomBy, resetView, focus, state: st, view };
+})();
+
+// ===== 界面：开局命名、顶栏、四页签、个人档案、建造、祈愿、音效字幕、存档 =====
+const UI = (function () {
+  const D = IB.D, $ = id => document.getElementById(id);
+  const h = s => IB.esc(String(s == null ? '' : s));
+  const money = n => (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('en-US');
+  const TICKS_PER_SEC = 2.25; // 1× 速度：一个营业日（540 分钟）约 4 分钟
+  const LS_KEY = 'immortality-bureau-save-v08', LS_OPT = 'immortality-bureau-opt';
+  const TABS = [['staff', '员工排班'], ['cit', '公民与个案'], ['course', '课程与书店'], ['audit', '审计与政策']];
+  const CIT_TABS = [['info', '概况'], ['exam', '考试学籍'], ['bill', '消费账单'], ['beh', '行为履历'], ['hire', '雇佣评估']];
+  const ui = {
+    started: false, tab: 'staff', speed: 1, paused: false, acc: 0, last: 0, nextRefresh: 0, down: false,
+    modal: null, citTab: 'info', q: '', filter: 'all', hl: 0, confirm: '',
+    offer: { job: 'inspector', wage: 98, days: 5, swap: false }, applyJob: 'receptionist', renewDays: {},
+    sound: true, autosave: true, petPause: true, logSeq: -1, pets: 0, subUntil: 0, hasSave: false,
+  };
+  try { Object.assign(ui, JSON.parse(localStorage.getItem(LS_OPT) || '{}')); } catch (e) { /* 浏览器禁用存储时使用默认设置 */ }
+  const saveOpt = () => { try { localStorage.setItem(LS_OPT, JSON.stringify({ sound: ui.sound, autosave: ui.autosave, petPause: ui.petPause })); } catch (e) { /* 同上 */ } };
+
+  // ---------- 小工具 ----------
+  function toast(msg, bad) {
+    if (!msg) return;
+    const el = document.createElement('div');
+    el.className = 'toast' + (bad ? ' bad' : '');
+    el.textContent = msg;
+    $('toast').appendChild(el);
+    setTimeout(() => el.remove(), bad ? 4200 : 3000);
+  }
+  const res = r => { if (r && r.msg) toast(r.msg, r.ok === false); else if (r && r.ok === false) toast('操作未成功', true); return r && r.ok !== false; };
+  const bar = (v, cls) => '<span class="bar ' + (cls || '') + '"><i style="width:' + Math.max(0, Math.min(100, Math.round(v))) + '%"></i></span>';
+  const btn = (act, label, attrs, cls, dis, title) => '<button class="btn ' + (cls || '') + '" data-act="' + act + '" ' + (attrs || '') + (dis ? ' disabled' : '') + (title ? ' title="' + h(title) + '"' : '') + '>' + label + '</button>';
+  const opt = (v, label, cur) => '<option value="' + h(v) + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + h(label) + '</option>';
+  const face = p => p.species === 'alien' ? '👽' : (p.age >= 62 ? '🧓' : '🧑');
+  function roomLabel(rm) {
+    const def = D.ROOMS[rm.type];
+    if (!def.multi) return def.short;
+    const same = IB.S.rooms.filter(r => r.type === rm.type);
+    return def.short + (same.length > 1 ? ' ' + (same.indexOf(rm) + 1) + ' 号' : '');
+  }
+  const kindName = k => k === 'w' ? '笔试' : '实操';
+
+  // ---------- 音效 ----------
+  let actx = null;
+  const SND = { build: [220, 330], cash: [880, 1320], alert: [440, 330, 440], pass: [660, 880, 1100], fail: [300, 220], ask: [520, 660, 520], pod: [400, 600, 800], bell: [990, 990],
+    paper: [700], click: [600], stamp: [160], levelup: [523, 659, 784, 1047], day: [392, 523] };
+  const sndAt = {};
+  function beep(name) {
+    const seq = SND[name];
+    if (!ui.sound || !seq) return;
+    const now = performance.now();
+    if (now - (sndAt[name] || 0) < 260) return;
+    sndAt[name] = now;
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      let t = actx.currentTime;
+      for (const f of seq) {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = name === 'stamp' ? 'square' : 'triangle';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.045, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t + 0.14);
+        t += 0.09;
+      }
+    } catch (e) { /* 无音频设备时静默 */ }
+  }
+  function drainFX(silent) {
+    const fx = IB.FX;
+    if (!silent) { const seen = {}; for (const n of fx) if (!seen[n]) { seen[n] = 1; beep(n); } }
+    fx.length = 0;
+  }
+
+  // ---------- 存档：优先 IndexedDB（容量大），退回 localStorage ----------
+  const DB = {
+    open() {
+      return new Promise((ok, no) => {
+        if (!window.indexedDB) return no(new Error('无 IndexedDB'));
+        const r = indexedDB.open('immortality-bureau', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('saves');
+        r.onsuccess = () => ok(r.result);
+        r.onerror = () => no(r.error);
+      });
+    },
+    async put(k, v) {
+      const db = await this.open();
+      return new Promise((ok, no) => {
+        const tx = db.transaction('saves', 'readwrite');
+        tx.objectStore('saves').put(v, k);
+        tx.oncomplete = () => { db.close(); ok(); };
+        tx.onerror = tx.onabort = () => { db.close(); no(tx.error); };
+      });
+    },
+    async get(k) {
+      const db = await this.open();
+      return new Promise((ok, no) => {
+        const rq = db.transaction('saves').objectStore('saves').get(k);
+        rq.onsuccess = () => { db.close(); ok(rq.result); };
+        rq.onerror = () => { db.close(); no(rq.error); };
+      });
+    },
+  };
+  async function saveGame(silent) {
+    const json = IB.serialize();
+    let where = '';
+    try { await DB.put('slot1', json); where = '浏览器本地数据库'; } catch (e) {
+      try { localStorage.setItem(LS_KEY, json); where = '浏览器本地存储'; } catch (e2) {
+        if (!silent || !ui.warnedSave) toast('浏览器存储不可用或空间不足（存档约 ' + Math.round(json.length / 1024) + ' KB）。请用菜单里的“导出 JSON”保存进度。', true);
+        ui.warnedSave = true;
+        return false;
+      }
+    }
+    ui.hasSave = true;
+    if (!silent) toast('已存档到' + where + '（' + Math.round(json.length / 1024) + ' KB）');
+    return true;
+  }
+  async function readSave() {
+    try { const v = await DB.get('slot1'); if (v) return v; } catch (e) { /* 退回 localStorage */ }
+    try { return localStorage.getItem(LS_KEY); } catch (e) { return null; }
+  }
+  function applyLoaded(json) {
+    try { IB.load(json); } catch (e) { toast('读档失败：' + e.message, true); return false; }
+    ui.modal = null; ui.logSeq = -1; ui.acc = 0; ui.pets = IB.S.petitions.length; ui.paused = true;
+    enter();
+    toast('已读档：' + IB.dateStr(IB.S.day) + '（已暂停，点击速度按钮继续）');
+    return true;
+  }
+  function exportJSON() {
+    const blob = new Blob([IB.serialize()], { type: 'application/json' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'immortality-bureau-day' + IB.S.day + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  // ---------- 开局 ----------
+  function renderStart(err) {
+    $('start').innerHTML = '<div class="startbox">' +
+      '<h1>永生办证中心</h1><div class="en">IMMORTALITY BUREAU · HTML 原型 V' + h(D.VERSION) + '</div>' +
+      '<div class="mut">技术已经实现永生。你是一家地方办证中心的局长：公民想合法按下那个“自动修复”按钮，得先在你这里考完七项认证。</div>' +
+      '<label for="in-player">局长昵称（最多 24 字）</label><input type="text" id="in-player" maxlength="24" placeholder="例如：老周" autocomplete="off">' +
+      '<label for="in-center">办证中心名称（最多 28 字）</label><input type="text" id="in-center" maxlength="28" placeholder="例如：东郊永生办证中心" autocomplete="off">' +
+      '<div class="err">' + h(err || '') + '</div>' +
+      '<div class="go">' + btn('start', '开始营业', '', 'pri') + (ui.hasSave ? btn('continue', '继续上次存档') : '') + btn('import', '导入 JSON 存档') + '</div>' +
+      '<ul><li>一个营业日 08:30—17:30，1× 速度约 4 分钟；一年 12 个月、每月 5 个营业日。</li>' +
+      '<li>公民按 登记 → 审核 → 缴费预约 → 笔试/实操 → 阅卷 → 次日后本人返访查分 的真实流程行动。</li>' +
+      '<li>点击地图上的人物看档案，点击空地建造，点击房间看详情；右侧四个页签管理全局。</li>' +
+      '<li>本原型全部离线运行，不联网，不收集任何数据。</li></ul></div>';
+  }
+  function startNew() {
+    const p = IB.cleanName($('in-player').value, 24), c = IB.cleanName($('in-center').value, 28);
+    if (!p) return renderStart('请填写局长昵称。');
+    IB.newState(p, c || (p + '的永生办证中心').slice(0, 28));
+    ui.logSeq = -1; ui.acc = 0; ui.pets = 0; ui.paused = false; ui.speed = 1; ui.modal = { t: 'help', first: true };
+    enter();
+  }
+  function enter() {
+    ui.started = true;
+    $('start').hidden = true; $('app').hidden = false;
+    IB.FX.length = 0;
+    RENDER.resize(); RENDER.resetView();
+    renderTop(); refresh(true);
+  }
+
+  // ---------- 顶栏 ----------
+  function renderTop() {
+    $('top').innerHTML = '<div class="brand" data-act="rename" title="点击修改昵称与中心名称"><span id="t-center"></span><small id="t-level"></small></div>' +
+      '<div class="stat"><b id="t-date"></b><span id="t-time"></span></div>' +
+      '<div class="stat"><b id="t-cash"></b><span id="t-net"></span></div>' +
+      '<div class="stat" title="公众信任：影响到访意愿"><b id="t-trust"></b><span>公众信任</span></div>' +
+      '<div class="stat" title="机构合规：影响上级态度与升级"><b id="t-comp"></b><span>机构合规</span></div>' +
+      '<div class="stat"><b id="t-vis"></b><span>今日到访 / 在场</span></div>' +
+      '<div class="grow"></div>' +
+      '<div class="seg" id="speed">' + [[0, '⏸ 暂停'], [1, '1×'], [2, '2×'], [4, '4×']].map(s => '<button data-act="speed" data-v="' + s[0] + '">' + s[1] + '</button>').join('') + '</div>' +
+      '<div class="seg"><button data-act="skip" data-v="day" title="快进到下一个营业日开门">下一营业日</button><button data-act="skip" data-v="month" title="快进 5 个营业日">快进一月</button><button data-act="skip" data-v="key" title="快进到下一条需要关注的事件（最多 5 日）">到关键事件</button></div>' +
+      btn('menu', '☰ 菜单');
+  }
+  function updTop() {
+    const S = IB.S, net = IB.dayNet(S.day);
+    $('t-center').textContent = S.center;
+    $('t-level').textContent = D.LEVEL_NAMES[S.level] + ' · 局长 ' + S.player;
+    $('t-date').textContent = IB.dateStr(S.day);
+    $('t-time').textContent = IB.timeStr(S.minute) + (ui.paused ? ' · 已暂停' : '');
+    $('t-cash').textContent = '现金 ' + money(S.cash);
+    $('t-net').innerHTML = '今日净额 <span class="' + (net >= 0 ? 'up' : 'down') + '">' + (net >= 0 ? '+' : '') + money(net) + '</span>';
+    $('t-trust').textContent = S.trust.toFixed(1);
+    $('t-comp').textContent = S.comp.toFixed(1);
+    const dd = S.daily[S.day];
+    $('t-vis').textContent = (dd ? dd.vis : 0) + ' / ' + S.agents.filter(a => a.k === 'cit').length;
+    for (const b of $('speed').children) b.classList.toggle('on', ui.paused ? b.dataset.v === '0' : +b.dataset.v === ui.speed);
+  }
+
+  // ---------- 地图浮层：待办、祈愿、图例、字幕、事件记录 ----------
+  function alerts() {
+    const S = IB.S, out = [];
+    if (S.petitions.length) out.push({ c: 'ask', tab: 'cit', t: '🙏 ' + S.petitions.length + ' 位公民在祈愿室等候你的裁决' });
+    const ready = S.apps.filter(a => a.cand).length;
+    if (ready) out.push({ c: 'good', tab: 'staff', t: '📨 人事编制署已派员 ' + ready + ' 人，等待接收' });
+    for (const rm of S.rooms) {
+      const def = D.ROOMS[rm.type];
+      if (def.job && !S.staff.some(s => s.room === rm.id)) out.push({ c: 'bad', tab: 'staff', t: '⚠ ' + roomLabel(rm) + ' 没有排班' + D.JOBS[def.job].name });
+    }
+    if (!S.staff.some(s => s.job === 'inspector')) out.push({ c: 'bad', tab: 'staff', t: '🛡 没有巡查员：未缴费者离场无人拦截' });
+    const up = S.up;
+    if (up.stage === 'pack' || up.stage === 'ready') out.push({ c: '', tab: 'audit', t: '🗂 升级材料待派外联跑证员送交' });
+    else if (up.stage === 'rejected') out.push({ c: '', tab: 'audit', t: '🈴 升级材料被退回：需补三份盖章证明' });
+    else if (up.stage === 'idle' && IB.upgradeConds().ok) out.push({ c: 'good', tab: 'audit', t: '⬆ 已满足升级条件，可申请' + D.LEVEL_NAMES[S.level + 1].split(' · ')[0] });
+    for (const s of S.staff) if (s.temp && s.end <= S.day) out.push({ c: '', tab: 'staff', t: '📄 ' + s.name + '（' + D.JOBS[s.job].name + '）合同今日到期' });
+    if (S.rooms.some(r => r.type === 'bookstore')) {
+      const none = Object.keys(D.BOOKS).filter(k => D.BOOKS[k].course && IB.bookAllowed(k) && !(S.stock[k] > 0)).length;
+      if (none) out.push({ c: '', tab: 'course', t: '📚 书店有 ' + none + ' 种已授权教材缺货' });
+    }
+    if (S.gq.length > 14) out.push({ c: '', tab: 'staff', t: '📝 阅卷积压 ' + S.gq.length + ' 份' });
+    return out;
+  }
+  function renderOverlays() {
+    const S = IB.S;
+    $('alerts').innerHTML = alerts().slice(0, 7).map(a => '<div class="alert ' + a.c + '" data-act="tab" data-v="' + a.tab + '">' + h(a.t) + '</div>').join('');
+    $('petcard').innerHTML = S.petitions.slice(0, 2).map(petHTML).join('') + (S.petitions.length > 2 ? '<div class="alert ask" data-act="tab" data-v="cit">还有 ' + (S.petitions.length - 2) + ' 位在等候…</div>' : '');
+    $('legend').innerHTML = '<span><i style="background:#e7b8a5"></i>公民</span><span><i style="background:#3fae93"></i>本中心员工</span><span><i style="background:#2f6fe0"></i>本中心巡查员</span><span><i style="background:#7b3fc4"></i>上级人员</span><span>拖动平移 · 滚轮缩放 · 点击查看</span>';
+    if (S.logSeq !== ui.logSeq) {
+      const prev = ui.logSeq;
+      ui.logSeq = S.logSeq;
+      $('logbox').innerHTML = S.log.slice(-70).reverse().map(l => '<div class="lg k-' + l.k + '"><time>' + IB.dateStr(l.d).replace(/^第\d+年/, '') + ' ' + IB.timeStr(l.m) + '</time>' + h(l.t) + '</div>').join('');
+      $('logbox').scrollTop = 0;
+      const cast = S.log.filter(l => l.n > prev && l.k === 'cast').pop();
+      if (cast && prev >= 0) { $('subtitle').textContent = cast.t; $('subtitle').classList.add('on'); ui.subUntil = performance.now() + 7000; }
+    }
+    if (ui.subUntil && performance.now() > ui.subUntil) { $('subtitle').classList.remove('on'); ui.subUntil = 0; }
+  }
+  function petHTML(p) {
+    const c = IB.C(p.cid);
+    if (!c) return '';
+    const rec = c.rec[p.course], fails = p.kind === 'w' ? rec.wFails : rec.pFails, id = 'data-id="' + c.id + '"';
+    return '<div class="pet"><h4>🙏 续考祈愿：' + h(c.name) + '</h4>' +
+      '<div class="sm">「' + h(D.COURSE[p.course].short) + '」' + kindName(p.kind) + '已连续未通过 ' + fails + ' 次 · ' + h(c.tplLabel) + '</div>' +
+      '<q>“尊敬的 ' + h(IB.S.player) + ' 局长，恳请您考虑我还未考出来的生命。”</q>' +
+      '<div class="row">' +
+      btn('pet', '签发单项免考', id + ' data-v="exempt"', 'sm warn', false, '该科' + kindName(p.kind) + '按免考认定，另一项仍须实考；合规 -4，留档待上级抽查') +
+      btn('pet', '公益辅助劳动 3 日', id + ' data-v="volunteer"', 'sm', false, '安排轻量辅助工作折抵人工成本；信任 -3、合规 -3') +
+      btn('pet', '特别申诉服务费 ' + D.FEES.special, id + ' data-v="fee"', 'sm', false, '只提供心理稳定加成，不保证合格、不能买分') +
+      btn('pet', '婉拒，请继续备考', id + ' data-v="ignore"', 'sm', false, '不做任何特殊处理') +
+      btn('cit', '档案', id, 'sm') + '</div></div>';
+  }
+
+  // ---------- 页签 1：员工排班 ----------
+  function staffState(s) {
+    const S = IB.S;
+    if (s.st === 'off') return ['下个营业日到岗', ''];
+    if (s.st === 'leave') return [s.why || '请假', 'r'];
+    if (s.st === 'away') return ['外出跑证（' + IB.dateStr(s.back) + ' 返回）', 'y'];
+    if (s.st === 'rest' || s.st === 'toRest') return ['错峰休息中', 'y'];
+    if (s.st === 'toPost') return ['返岗途中', 'y'];
+    if (s.examUntil > S.minute) return ['监考中', 'b'];
+    if (s.busy) return ['办理业务中', 'g'];
+    if (s.job !== 'inspector' && D.JOBS[s.job].room && !s.room) return ['待命（未排班）', 'r'];
+    return ['在岗', 'g'];
+  }
+  function staffCard(s) {
+    const S = IB.S, j = D.JOBS[s.job], st = staffState(s), id = 'data-id="' + s.id + '"';
+    let ctl = '';
+    if (s.job === 'inspector') {
+      ctl += '任务 <select data-chg="duty" ' + id + '>' + Object.keys(D.DUTIES).map(k => opt(k, D.DUTIES[k].name, s.duty)).join('') + '</select>';
+    } else if (j.room) {
+      const rms = S.rooms.filter(r => r.type === j.room);
+      ctl += '岗位 <select data-chg="assign" ' + id + '>' + opt('', rms.length ? '待命（不排班）' : '暂无' + D.ROOMS[j.room].short, s.room || '') + rms.map(r => opt(r.id, roomLabel(r), s.room)).join('') + '</select>';
+    }
+    ctl += ' 休息 <select data-chg="rest" ' + id + '>' + opt('A', '12:00 班', s.rest) + opt('B', '12:45 班', s.rest) + opt('N', '不休息', s.rest) + '</select>';
+    let ops = btn('bonus', '奖金 ' + D.COSTS.bonus, id, 'sm', s.bonusDay === S.day, '满意度 +12，每人每日一次');
+    if (s.temp) {
+      const rd = ui.renewDays[s.id] || 5;
+      ops += ' <select data-chg="renewDays" ' + id + '>' + IB.TEMP_DAYS.map(d => opt(d, '续 ' + d + ' 日', rd)).join('') + '</select>' + btn('renew', '续签', id, 'sm', s.renewDay === S.day);
+      if (s.cid) ops += btn('cit', '个人档案', 'data-id="' + s.cid + '"', 'sm');
+    }
+    ops += btn('dismiss', ui.confirm === 'dismiss' + s.id ? '确认' + (s.temp ? '解约' : '退回') + '？' : (s.temp ? '解约' : '退回编制署'), id, 'sm warn');
+    const duty = s.job === 'inspector' ? '<div class="sm mut">' + h(D.DUTIES[s.duty].desc) + (s.caught ? ' 已查处 ' + s.caught + ' 起。' : '') + '</div>' : '';
+    return '<div class="card' + (ui.hl === s.id ? ' hl' : '') + '" id="stf' + s.id + '">' +
+      '<div class="row sp"><div class="row"><span class="sw" style="background:' + j.color + '"></span><b>' + h(s.name) + '</b><span class="mut">' + face(s) + ' ' + j.name + '</span>' +
+      '<span class="tag ' + (s.temp ? 'y' : 'b') + '">' + (s.temp ? '临时合同 · 至 ' + IB.dateStr(s.end).replace(/^第\d+年/, '') : '正式编制') + '</span>' + (s.mismatch ? '<span class="tag r" title="原岗位：' + h(s.origin) + '">不对口</span>' : '') + '</div>' +
+      '<span class="tag ' + st[1] + '">' + h(st[0]) + '</span></div>' +
+      '<div class="row sm" style="margin:4px 0">能力 <b>' + Math.round(IB.staffSkill(s)) + '</b> · 效率 ×' + IB.staffEff(s).toFixed(2) + ' · 满意度 ' + bar(s.sat, s.sat < 35 ? 'r' : s.sat < 55 ? 'y' : '') + ' ' + Math.round(s.sat) +
+      ' · 日薪 ' + s.wage + (s.temp ? '（期望 ' + s.expect + '）' : '') + ' · 今日经办 ' + s.served + '</div>' + duty +
+      '<div class="row sm">' + ctl + '<span class="grow"></span>' + ops + '</div></div>';
+  }
+  function tabStaff() {
+    const S = IB.S, cap = D.FORMAL_CAP[S.level];
+    const formal = S.staff.filter(s => !s.temp), temp = S.staff.filter(s => s.temp);
+    let o = '<h3>人事编制署 <small>正式编制 ' + IB.formalCount() + ' / ' + cap + '（含在途申请）· 次营业日答复 · 派来的人可能不对口</small></h3>';
+    o += '<div class="card"><div class="row"><select data-chg="applyJob">' + Object.keys(D.JOBS).filter(k => !D.JOBS[k].temp).map(k => opt(k, D.JOBS[k].name + '（日薪 ' + D.JOBS[k].wage + '）' + (S.rooms.some(r => r.type === D.JOBS[k].room) ? '' : ' · 暂无房间'), ui.applyJob)).join('') + '</select>' +
+      btn('apply', '提交用人申请', '', 'pri', IB.formalCount() >= cap) + '<span class="sm mut">接收时收入职手续费 ' + D.COSTS.hire + '</span></div>';
+    for (const ap of S.apps) {
+      const id = 'data-id="' + ap.id + '"';
+      if (!ap.cand) o += '<div class="row sm mut" style="margin-top:5px">📨 「' + D.JOBS[ap.job].name + '」申请已于 ' + IB.dateStr(ap.day) + ' 提交，等待答复… ' + btn('decline', '撤回', id, 'sm') + '</div>';
+      else o += '<div class="row sm" style="margin-top:5px">📨 <b>' + h(ap.cand.name) + '</b> ' + face(ap.cand) + ' ' + ap.cand.age + ' 岁 → ' + D.JOBS[ap.job].name + ' · 能力 <b>' + ap.cand.quality + '</b>' +
+        (ap.cand.mismatch ? ' <span class="tag r">不对口：原' + h(ap.cand.origin) + '</span>' : ' <span class="tag g">对口</span>') + '<span class="grow"></span>' + btn('accept', '接收', id, 'sm pri') + btn('decline', '退回', id, 'sm') + '</div>';
+    }
+    o += '</div>';
+    o += '<h3>临时合同 <small>巡查员、外联跑证员、政务关系维护员只能从来访公民中签约</small></h3>';
+    if (!temp.length) o += '<div class="hint">目前没有临时工。打开任意公民档案的“雇佣评估”页即可谈合同；对方也是考生，办理本人考务当天会请假。</div>';
+    o += temp.map(staffCard).join('');
+    const leads = talent();
+    if (leads) o += '<div class="card"><div class="b sm">人才线索（来访公民中能力靠前者，点击查看）</div>' + leads + '</div>';
+    o += '<h3>正式员工 <small>' + formal.length + ' 人 · 不会主动离职</small></h3>' + formal.map(staffCard).join('');
+    return o;
+  }
+  function talent() {
+    const S = IB.S, pool = S.citizens.filter(c => c.firstDay && !c.staff);
+    if (!pool.length) return '';
+    let o = '';
+    for (const job of ['inspector', 'liaison', 'relations']) {
+      const sk = D.JOBS[job].skill, top = pool.slice().sort((a, b) => b.skills[sk] - a.skills[sk]).slice(0, 3);
+      o += '<div class="row sm" style="margin-top:3px"><span class="mut" style="width:104px">' + D.JOBS[job].name + '</span>' +
+        top.map(c => '<button class="btn sm" data-act="cit" data-id="' + c.id + '" data-v="hire" data-k="' + job + '">' + h(c.name) + ' ' + c.skills[sk] + '</button>').join('') + '</div>';
+    }
+    return o;
+  }
+
+  // ---------- 页签 2：公民与个案 ----------
+  function agentState(a) {
+    const rm = a.room && IB.Rm(a.room), rn = rm ? D.ROOMS[rm.type].short : '大厅';
+    switch (a.st) {
+      case 'q': return '在' + rn + '排队';
+      case 'toSvc': case 'svc': return '在' + rn + '办理';
+      case 'toSeat': case 'seat': return '在' + rn + '候考';
+      case 'exam': return '在' + rn + '考试中';
+      case 'petition': return '在祈愿室等候裁决';
+      case 'leave': return '正在离场';
+      default: return '在馆内走动';
+    }
+  }
+  function citStatus(c) {
+    const S = IB.S, a = c.agent && IB.A(c.agent);
+    if (a) return ['在场 · ' + agentState(a), 'g'];
+    if (c.staff) { const s = IB.St(c.staff); if (s) return ['本中心' + D.JOBS[s.job].name + '（临时合同）', 'b']; }
+    if (c.license) return c.slot === 'active' ? ['名额已激活 · 定期修复舱维护', 'p'] : ['已获电子许可 · 名额候补中', 'p'];
+    if (c.status === 'waitLevel') return ['等待本中心取得更高资质', 'y'];
+    if (c.paper) { const p = IB.PAPER(c.paper); if (p) return [p.pub ? '成绩已发布，待本人返访查分' : '试卷封存待批', 'y']; }
+    if (c.booking) return ['已预约 ' + IB.dateStr(c.booking.day).replace(/^第\d+年/, '') + ' ' + kindName(c.booking.kind), ''];
+    if (c.paused) return ['暂时休学', 'r'];
+    if (c.plan) return ['在家 · ' + (c.plan.day <= S.day ? '今日' : IB.dateStr(c.plan.day).replace(/^第\d+年/, '')) + '来办「' + (D.VISIT_NAMES[c.plan.type] || '业务') + '」', ''];
+    return [c.note || '在家', ''];
+  }
+  function citRows() {
+    const S = IB.S, q = ui.q.trim();
+    const pet = {};
+    for (const p of S.petitions) pet[p.cid] = 1;
+    let list = S.citizens.filter(c => c.firstDay);
+    if (q) list = list.filter(c => c.name.indexOf(q) >= 0 || c.tplLabel.indexOf(q) >= 0 || c.job.indexOf(q) >= 0);
+    if (ui.filter === 'on') list = list.filter(c => c.agent);
+    else if (ui.filter === 'owe') list = list.filter(c => c.inv.some(v => v.st === 'esc' || v.st === 'open'));
+    else if (ui.filter === 'lic') list = list.filter(c => c.license);
+    else if (ui.filter === 'alien') list = list.filter(c => c.species === 'alien');
+    else if (ui.filter === 'stuck') list = list.filter(c => !c.license && D.COURSES.some(co => c.rec[co.id].wFails + c.rec[co.id].pFails >= 2 && !c.rec[co.id].cert));
+    const rank = c => (pet[c.id] ? 0 : c.agent ? 1 : 2);
+    list.sort((a, b) => rank(a) - rank(b) || b.lastVisit - a.lastVisit || a.id - b.id);
+    const total = list.length;
+    list = list.slice(0, 80);
+    let o = '<table><tr><th>公民</th><th>状态</th><th class="n">认证</th><th>当前目标</th><th class="n">欠缴</th></tr>';
+    for (const c of list) {
+      const st = citStatus(c), ne = IB.nextExam(c), t = IB.totals(c);
+      o += '<tr class="click" data-act="cit" data-id="' + c.id + '"><td>' + face(c) + ' <b>' + h(c.name) + '</b>' + (pet[c.id] ? ' <span class="tag p">祈愿</span>' : '') + '<div class="sm mut">' + h(c.tplLabel) + '</div></td>' +
+        '<td><span class="tag ' + st[1] + '" style="white-space:normal">' + h(st[0]) + '</span></td><td class="n">' + IB.certCount(c) + '/7</td>' +
+        '<td class="sm">' + (ne ? h(D.COURSE[ne.course].short) + ' ' + kindName(ne.kind) : (c.license ? '已获许可' : '待汇总上报')) + '</td>' +
+        '<td class="n ' + (t.unpaid ? 'bad' : 'mut') + '">' + (t.unpaid ? money(t.unpaid) : '—') + '</td></tr>';
+    }
+    o += '</table>';
+    if (!total) o += '<div class="hint">没有符合条件的公民。</div>';
+    else if (total > list.length) o += '<div class="sm mut">共 ' + total + ' 人，仅显示前 ' + list.length + ' 人，可用搜索缩小范围。</div>';
+    return o;
+  }
+  function tabCit() {
+    const S = IB.S, known = S.citizens.filter(c => c.firstDay);
+    let o = '';
+    if (S.petitions.length) o += '<h3>待裁决的续考祈愿 <small>当日闭馆前不处理视为婉拒</small></h3>' + S.petitions.map(petHTML).join('');
+    o += '<h3>局长互动 <small>今日剩余 ' + IB.encourLeft() + ' / ' + D.ENCOURAGE_PER_DAY + ' 次 · 每人每日 1 次 · 在个人档案“概况”页使用</small></h3>';
+    o += '<h3>公民名册 <small>已到访 ' + known.length + ' 人 · 持证 ' + S.stats.certs + ' 项 · 电子许可 ' + S.stats.licenses + ' 人</small></h3>';
+    o += '<div class="row" style="margin-bottom:6px"><input type="search" id="citq" data-inp="q" placeholder="搜索姓名 / 人群 / 职业" value="' + h(ui.q) + '" style="flex:1">' +
+      '<select data-chg="filter">' + [['all', '全部'], ['on', '当前在场'], ['stuck', '多次未通过'], ['owe', '有欠缴/逃单'], ['alien', '外星公民'], ['lic', '已获电子许可']].map(f => opt(f[0], f[1], ui.filter)).join('') + '</select></div>';
+    o += '<div id="citlist">' + citRows() + '</div>';
+    return o;
+  }
+
+  // ---------- 页签 3：课程与书店 ----------
+  function tabCourse() {
+    const S = IB.S, ke = IB.keyEvents();
+    let o = '<h3>七项认证学制 <small>每项须笔试、实操双合格；合格成绩在考纲周期内有效</small></h3>';
+    o += '<div class="hint">顺序：再生生命工程 → 智能系统伦理 → 中段三科（深空/贡献/礼制，顺序可调）→ 环境安全资质 → 永续行政程序 → 汇总上报 → 上级系统电子签发' + h(D.FINAL_LICENSE) + '。</div>';
+    o += '<table><tr><th>认证</th><th>受理</th><th class="n">合格线 笔/实</th><th>实操内容</th><th class="n">在读</th><th class="n">已发证</th></tr>';
+    for (const co of D.COURSES) {
+      let cur = 0, cert = 0;
+      for (const c of S.citizens) { if (c.rec[co.id].cert) cert++; else if (c.firstDay && !c.license && IB.curCourse(c) === co.id) cur++; }
+      o += '<tr><td title="' + h(co.name) + '">' + co.icon + ' <b>' + h(co.short) + '</b></td><td>' + (co.level <= S.level ? '<span class="tag g">已开放</span>' : '<span class="tag r">需' + D.LEVEL_NAMES[co.level].split(' · ')[0] + '</span>') + '</td>' +
+        '<td class="n">' + co.wLine + ' / ' + co.pLine + '</td><td class="sm mut">' + h(co.prac) + '</td><td class="n">' + cur + '</td><td class="n">' + cert + '</td></tr>';
+    }
+    o += '</table>';
+    const F = D.FEES;
+    o += '<h3>收费公示 <small>统一标准价，补考不加价；离场未缴不追缴</small></h3><div class="card sm">建档 ' + F.reg + ' · 每日到访基础办理费 ' + F.visit + '（同日一次）· 笔试报名 ' + F.written + ' · 实操报名 ' + F.practical +
+      ' · 缺件咨询 ' + F.consult + ' · 私教一节 ' + F.tutor + ' · 心理辅导 ' + F.counsel + ' · 上报核验 ' + F.report + ' · 修复舱维护 ' + F.pod + '</div>';
+    o += '<h3>考务与日程 <small>笔试 09:30 / 14:30 每场一科六席；实操两工位；须提前至少一个营业日预约</small></h3>';
+    o += '<div class="card sm"><div>待批试卷 <b>' + ke.grading + '</b> 份 · 已发布但本人尚未返访查分 <b>' + ke.unchecked + '</b> 份</div>' +
+      (ke.list.length ? ke.list.map(e => '<div><span class="tag">' + (e.d === S.day ? '今日' : IB.dateStr(e.d).replace(/^第\d+年/, '')) + '</span> ' + h(e.t) + '</div>').join('') : '<div class="mut">暂无已预约的场次。</div>') + '</div>';
+    o += '<h3>永生考试书店 <small>当前考纲第 ' + S.edition + ' 版 · 新学年换版后旧版停售</small></h3>';
+    if (!S.rooms.some(r => r.type === 'bookstore')) o += '<div class="hint">尚未建成书店。</div>';
+    else {
+      o += '<table><tr><th>书目</th><th class="n">售价</th><th class="n">进价</th><th class="n">库存</th><th class="n">旧版</th><th></th></tr>';
+      for (const sku of Object.keys(D.BOOKS)) {
+        const b = D.BOOKS[sku], ok = IB.bookAllowed(sku), old = S.old[sku] || 0, a = 'data-id="' + sku + '"';
+        o += '<tr><td>' + h(b.name) + '<div class="sm mut">' + h(b.kind) + ' · 备考 +' + b.prep + '</div></td><td class="n">' + b.price + '</td><td class="n">' + b.cost + '</td>' +
+          '<td class="n ' + (ok && !(S.stock[sku] > 0) ? 'bad b' : '') + '">' + (S.stock[sku] || 0) + '</td><td class="n mut">' + (old || '—') + '</td><td class="n">' +
+          (ok ? btn('buy', '+5', a + ' data-v="5"', 'sm') + ' ' + btn('buy', '+10', a + ' data-v="10"', 'sm') : '<span class="tag r">未获发行授权</span>') +
+          (old ? ' ' + btn('recycle', '回收', a, 'sm', false, '按进价两折回收全部旧版') : '') + '</td></tr>';
+      }
+      o += '</table><div class="sm mut">官方数字考纲常年免费公开；公民可只靠免费考纲居家复习。' + (S.policies.oldEd ? '已启用“旧版教材互认”：旧版按 6 折明示出售。' : '旧版库存只能回收，除非启用“旧版教材互认”政策。') + '</div>';
+    }
+    return o;
+  }
+
+  // ---------- 页签 4：审计与政策 ----------
+  function upgradeHTML() {
+    const S = IB.S, up = S.up, cd = IB.upgradeConds();
+    let o = '<h3>机构等级 <small>' + D.LEVEL_NAMES[S.level] + '</small></h3><div class="card">';
+    if (cd.max) o += '<div class="ok b">已是最高等级，七项认证全部可办理。</div>';
+    else {
+      o += '<div class="b sm">升为「' + D.LEVEL_NAMES[cd.target] + '」的条件（均为真实经营数据）</div><div class="grid2 sm" style="margin:5px 0">' +
+        cd.items.map(i => '<div>' + (i.ok ? '<span class="ok">✔</span>' : '<span class="bad">✘</span>') + ' ' + h(i.label) + ' <b>' + money(i.cur) + '</b> / ' + money(i.need) + '</div>').join('') + '</div>';
+      const hasL = S.rooms.some(r => r.type === 'liaison');
+      if (up.stage === 'idle') {
+        o += '<div class="row">' + btn('upStart', '申请升级', '', 'pri', !cd.ok) + (hasL ? '' : '<span class="sm bad">需先建成政务联络与证照档案室，并签约一名外联跑证员</span>') + '</div>';
+        if (up.last) o += '<div class="sm bad">上次复核未通过：' + h(up.last) + '</div>';
+      } else if (up.stage === 'pack' || up.stage === 'ready') {
+        o += '<div class="row"><span>🗂 材料已装袋，等待送交上级。</span>' + btn('upSend', '派外联跑证员送交', '', 'pri') + '</div>';
+      } else if (up.stage === 'trip1' || up.stage === 'trip2') {
+        o += '<div>🚶 外联跑证员在路上，预计 ' + IB.dateStr(up.back) + ' 返回。</div>';
+      } else if (up.stage === 'rejected') {
+        o += '<div class="b">📮 材料被一次性退回，需补三份盖章证明：</div>' + IB.PROOFS.map((p, i) => '<div class="row sm" style="margin-top:4px">' + (up.proofs[i] ? '<span class="ok">✔ 已签章</span>' : btn('stamp', '签章', 'data-v="' + i + '"', 'sm pri')) +
+          ' ' + h(p.name) + ' <span class="mut">（需已排班的' + D.JOBS[p.job].name + '）</span></div>').join('');
+      } else if (up.stage === 'await') o += '<div>📮 材料已受理，上级复核员最早 ' + IB.dateStr(up.visit) + ' 到场（紫色制服）。请保证监考员、阅卷员当日在岗。</div>';
+      else if (up.stage === 'visit') o += '<div class="pur b">🟣 上级复核员正在现场复核。</div>';
+      if (!up.tut) o += '<div class="sat">第一次升级需要完整跑一遍：送交 → 退回 → 补三份证明 → 再送交 → 现场复核。之后档案室会自动汇总。</div>';
+    }
+    return o + '</div>';
+  }
+  function tabAudit() {
+    const S = IB.S, st = S.stats;
+    let o = upgradeHTML();
+    // 财务
+    const dd = S.daily[S.day] || { inc: {}, exp: {}, due: 0, esc: 0, vis: 0 };
+    const side = (m, sign) => Object.keys(m).sort((a, b) => Math.abs(m[b]) - Math.abs(m[a])).map(k => '<div class="row sp sm"><span>' + h(D.CATS[k] || k) + '</span><b>' + (sign > 0 ? '+' : '-') + money(Math.abs(m[k])) + '</b></div>').join('') || '<div class="sm mut">暂无</div>';
+    o += '<h3>今日账目 <small>全部来自真实发生的流水；现金 = 期初 + 流水合计</small></h3><div class="card"><div class="grid2"><div><div class="b ok sm">收入</div>' + side(dd.inc, 1) + '</div><div><div class="b bad sm">支出（工资、维护于闭馆结算）</div>' + side(dd.exp, -1) + '</div></div>' +
+      '<div class="sm mut" style="margin-top:5px">今日开具应缴 ' + money(dd.due) + ' · 离场未缴（逃单）' + money(dd.esc) + '</div></div>';
+    let rows = '';
+    for (let d = S.day - 1; d >= Math.max(1, S.day - 6); d--) {
+      const x = S.daily[d];
+      if (!x) continue;
+      let inc = 0, exp = 0;
+      for (const k in x.inc) inc += x.inc[k];
+      for (const k in x.exp) exp += x.exp[k];
+      rows += '<tr><td>' + IB.dateStr(d) + '</td><td class="n">' + x.vis + '</td><td class="n ok">+' + money(inc) + '</td><td class="n bad">-' + money(Math.abs(exp)) + '</td><td class="n b">' + money(inc + exp) + '</td><td class="n">' + money(x.esc) + '</td></tr>';
+    }
+    if (rows) o += '<table><tr><th>营业日</th><th class="n">到访</th><th class="n">收入</th><th class="n">支出</th><th class="n">净额</th><th class="n">逃单</th></tr>' + rows + '</table>';
+    const tot = Object.keys(S.tot).sort((a, b) => S.tot[b] - S.tot[a]);
+    o += '<div class="card sm" style="margin-top:7px"><div class="b">开业以来累计</div>' + tot.map(k => '<span class="tag ' + (S.tot[k] >= 0 ? 'g' : 'r') + '" style="margin:2px 3px 0 0">' + h(D.CATS[k] || k) + ' ' + (S.tot[k] >= 0 ? '+' : '-') + money(Math.abs(S.tot[k])) + '</span>').join('') + '</div>';
+    // 稽核
+    const gw = IB.gateWhy(), gateOk = gw === '守门巡查员未能及时发现';
+    o += '<h3>收费稽核与纪律</h3><div class="card sm"><div>大门现状：' + (gateOk ? '<span class="ok b">有巡查员值守</span>（能拦下大部分未缴费者，当场结清）' : '<span class="bad b">' + h(gw) + '</span>，未缴费者可直接离场') + '</div>' +
+      '<div>累计逃单 <b>' + st.escaped + '</b> 笔 / ' + money(st.escapedAmt) + '（不追缴）· 门口拦截结清 <b>' + st.intercepted + '</b> 人次 · 查处作弊 <b>' + st.cheatsCaught + '</b> 起 · 查实红包 <b>' + st.bribesFound + '</b> 起</div>' +
+      '<div>真实到考 <b>' + st.seatings + '</b> 人次 · 独立付费考生 <b>' + st.payerCount + '</b> 人 · 报名费实收 <b>' + money(st.examFees) + '</b> · 因缺岗取消场次 <b>' + st.cancelled + '</b> 场</div>' +
+      '<div>局长签发免考 <b>' + st.exemptions + '</b> 份' + (S.volunteer ? ' · 公益辅助劳动剩余 ' + S.volunteer + ' 日' : '') + '</div></div>';
+    o += '<h3>上级例行审查 <small>不定期到场（紫色制服），抽查免考、红包、缺岗</small></h3>';
+    if (!S.audits.length) o += '<div class="hint">尚未接受过审查。</div>';
+    else o += S.audits.slice(-5).reverse().map(a => '<div class="card sm"><div class="row sp"><b>' + IB.dateStr(a.d) + '</b><span>合规 ' + (a.dc >= 0 ? '+' : '') + a.dc + (a.dt ? ' · 信任 ' + (a.dt > 0 ? '+' : '') + a.dt : '') + (a.fine ? ' · <span class="bad">罚款 ' + a.fine + '</span>' : '') + '</span></div>' + a.f.map(x => '<div>· ' + h(x) + '</div>').join('') + '</div>').join('');
+    o += '<h3>政策 <small>每项都有真实目标、真实效果与真实代价</small></h3>';
+    for (const p of D.POLICIES) {
+      const on = !!S.policies[p.key];
+      o += '<div class="card"><div class="row sp"><b>' + h(p.name) + '</b>' + btn('policy', on ? '已启用 · 点击停用' : '启用', 'data-id="' + p.key + '"', 'sm ' + (on ? 'pri' : '')) + '</div>' +
+        '<div class="sm"><span class="mut">目标</span> ' + h(p.goal) + '　<span class="mut">效果</span> ' + h(p.effect) + '　<span class="mut">代价</span> ' + h(p.cost) + '</div><div class="sat">' + h(p.satire) + '</div></div>';
+    }
+    return o;
+  }
+
+  // ---------- 个人档案（五页） ----------
+  function citModal(c) {
+    const st = citStatus(c);
+    let body = '';
+    if (ui.citTab === 'info') body = citInfo(c);
+    else if (ui.citTab === 'exam') body = citExam(c);
+    else if (ui.citTab === 'bill') body = citBill(c);
+    else if (ui.citTab === 'beh') body = citBeh(c);
+    else body = citHire(c);
+    const a = c.agent && IB.A(c.agent);
+    return '<div class="dlg wide"><header><div class="avatar" style="background:hsl(' + c.hue + ',55%,82%)">' + face(c) + '</div><h2>' + h(c.name) + '<small>' + c.age + ' 岁 · ' + h(c.tplLabel) + ' · ' + h(c.job) + '</small>' +
+      '<div class="sm"><span class="tag ' + st[1] + '">' + h(st[0]) + '</span> <span class="tag">认证 ' + IB.certCount(c) + '/7</span>' + (c.license ? ' <span class="tag p">电子许可</span>' : '') + '</div></h2>' +
+      (a ? btn('locate', '在地图上定位', 'data-id="' + a.id + '"', 'sm') : '') + '<button class="x" data-act="close">×</button></header>' +
+      '<div class="dtabs">' + CIT_TABS.map(t => '<button data-act="citTab" data-v="' + t[0] + '" class="' + (ui.citTab === t[0] ? 'on' : '') + '">' + t[1] + '</button>').join('') + '</div><div class="body">' + body + '</div></div>';
+  }
+  function citInfo(c) {
+    const S = IB.S, left = IB.encourLeft(), used = c.encDay === S.day;
+    let o = '<div class="hint">' + h(c.bg) + ' 来办证的原因：' + h(c.motive) + '。</div>';
+    o += '<div class="grid2"><div><div class="b sm">性格</div>' + Object.keys(IB.TRAIT_NAMES).map(k => '<div class="row sm"><span style="width:52px" class="mut">' + IB.TRAIT_NAMES[k] + '</span>' + bar(c.tr[k], 'w') + ' ' + c.tr[k] + '</div>').join('') + '</div>' +
+      '<div><div class="b sm">当前状态</div>' +
+      '<div class="row sm"><span style="width:64px" class="mut">压力</span>' + bar(c.stress, 'w ' + (c.stress > 60 ? 'r' : 'y')) + ' ' + Math.round(c.stress) + '</div>' +
+      '<div class="row sm"><span style="width:64px" class="mut">耐心</span>' + bar(c.patience, 'w') + ' ' + Math.round(c.patience) + '</div>' +
+      '<div class="row sm"><span style="width:64px" class="mut">与局长关系</span>' + bar(c.relation, 'w') + ' ' + Math.round(c.relation) + '</div>' +
+      '<div class="row sm"><span style="width:64px" class="mut">经济压力</span>' + bar(c.fin, 'w ' + (c.fin > 70 ? 'r' : 'y')) + ' ' + c.fin + '</div>' +
+      '<dl class="kv sm" style="margin-top:6px"><dt>物种</dt><dd>' + (c.species === 'alien' ? '外星文明公民' : '地球人类') + '</dd><dt>首次到访</dt><dd>' + (c.firstDay ? IB.dateStr(c.firstDay) : '尚未到访') + '</dd><dt>到访次数</dt><dd>' + c.visitN + '</dd>' +
+      (c.exp.length ? '<dt>对口资历</dt><dd>' + c.exp.map(x => h(D.COURSE[x].short)).join('、') + '（已验证的从业经验）</dd>' : '') +
+      (c.strategy ? '<dt>最近抉择</dt><dd>' + h(c.strategy) + '</dd>' : '') + (c.note ? '<dt>备注</dt><dd>' + h(c.note) + '</dd>' : '') + '</dl></div></div>';
+    o += '<h3>局长互动 <small>不收费、不改成绩 · 今日全中心剩余 ' + left + ' 次' + (used ? ' · 今天已与其谈过' : '') + '</small></h3><div class="row">' +
+      Object.keys(IB.ENC).map(k => { const e = IB.ENC[k]; return btn('enc', e.name, 'data-id="' + c.id + '" data-v="' + k + '"', '', !left || used, '耐心 +' + e.pat + '，压力 ' + e.stress + (e.prep ? '，准备度 +' + e.prep : '') + (e.trust ? '，公众信任 +' + e.trust : '')); }).join('') + '</div>';
+    return o;
+  }
+  function citExam(c) {
+    const S = IB.S, order = IB.courseOrder(c), ne = IB.nextExam(c);
+    let o = '';
+    if (c.license) o += '<div class="hint">🏅 ' + IB.dateStr(c.licDay) + ' 由上级系统电子签发' + h(D.FINAL_LICENSE) + '（非本中心制证）。' + (c.slot === 'active' ? '生命维护名额已激活，已完成修复舱维护 ' + c.pods + ' 次' + (c.annual ? '；年度文明更新确认 ' + c.annual.n + ' 次，下次 ' + IB.dateStr(c.annual.due) : '') + '。' : '签发不等于名额，现处于公开候补。') + '</div>';
+    else if (ne) {
+      const co = D.COURSE[ne.course];
+      o += '<div class="card"><div class="b">当前目标：' + co.icon + ' ' + h(co.short) + ' · ' + kindName(ne.kind) + '</div>' +
+        '<div class="row sm" style="margin-top:4px">准备度 ' + bar(c.prep[ne.course], 'w') + ' ' + Math.round(c.prep[ne.course]) + '</div>' +
+        '<div class="sm">估计通过率（仅为估计，实际成绩有波动）：笔试 <b>约 ' + IB.estPass(c, ne.course, 'w') + '%</b> · 实操 <b>约 ' + IB.estPass(c, ne.course, 'p') + '%</b></div>' +
+        (co.level > S.level ? '<div class="sm bad">本中心尚未取得受理该认证的资质，对方只能等待。</div>' : '') +
+        (c.species === 'alien' && co.alienPen && !S.policies.alienEquiv ? '<div class="sm warnc">实操设备与礼制模板不适配该物种，存在适配性扣分（可用“跨文明等效与物种适配”政策消除）。</div>' : '') + '</div>';
+    } else o += '<div class="hint">七项认证已齐，等待到汇总上报处办理上报。</div>';
+    o += '<table><tr><th></th><th>认证</th><th>笔试</th><th>实操</th><th>证书</th><th></th></tr>';
+    order.forEach((id, i) => {
+      const co = D.COURSE[id], v = IB.examView(c, id), mi = c.mid.indexOf(id);
+      const cell = x => '<span class="' + (x.cls === 'ok' ? 'ok' : x.cls === 'bad' ? 'bad' : x.cls === 'ex' ? 'pur' : x.cls === 'seal' ? 'warnc' : '') + '">' + h(x.text) + '</span>' + (x.fails ? '<div class="sm mut">累计未通过 ' + x.fails + ' 次 · 合格线 ' + x.line + '</div>' : '<div class="sm mut">合格线 ' + x.line + '</div>');
+      o += '<tr><td class="mut">' + (i + 1) + '</td><td title="' + h(co.name) + '">' + co.icon + ' <b>' + h(co.short) + '</b>' + (co.level > S.level ? '<div><span class="tag r">本中心未获授权</span></div>' : '') + '</td><td>' + cell(v.w) + '</td><td>' + cell(v.p) + '</td>' +
+        '<td>' + (v.cert ? '<span class="tag g">已发证</span><div class="sm mut">' + IB.dateStr(v.certDay) + '</div>' : '<span class="mut">—</span>') + '</td>' +
+        '<td class="n">' + (mi >= 0 ? btn('mid', '▲', 'data-id="' + c.id + '" data-k="' + id + '" data-v="-1"', 'sm', mi === 0, '提前') + btn('mid', '▼', 'data-id="' + c.id + '" data-k="' + id + '" data-v="1"', 'sm', mi === c.mid.length - 1, '延后') : '') + '</td></tr>';
+    });
+    o += '</table><div class="sm mut">未经本人返访查分的成绩不会显示。中段三科在尚未报考前可由局长调整顺序。免考凭证每门最多一张，且只能免笔试或实操其中一项。</div>';
+    const books = Object.keys(c.books);
+    o += '<h3>已购教材</h3>' + (books.length ? '<div class="sm">' + books.map(k => { const p = k.split('@'); return '<span class="tag" style="margin:0 4px 4px 0">' + h((D.BOOKS[p[0]] || {}).name || p[0]) + ' · 第 ' + h(p[1]) + ' 版</span>'; }).join('') + '</div>' : '<div class="sm mut">没有购买任何教材（免费公开考纲同样可以备考）。</div>');
+    return o;
+  }
+  function citBill(c) {
+    const t = IB.totals(c);
+    let o = '<div class="grid2"><div class="card"><dl class="kv sm"><dt>累计应缴</dt><dd class="b">' + money(t.due) + '</dd><dt>累计实收</dt><dd class="b ok">' + money(t.paid) + '</dd><dt>未缴 / 逃单</dt><dd class="b ' + (t.unpaid ? 'bad' : '') + '">' + money(t.unpaid) + '</dd></dl></div>' +
+      '<div class="card"><dl class="kv sm"><dt>直接成本</dt><dd>' + money(t.cost) + '</dd><dt>直接毛利</dt><dd>' + money(t.gross) + '</dd><dt>分摊后估算贡献</dt><dd class="b">' + money(t.est) + '<span class="mut">（估算：按到访次数分摊人工与维护 ' + money(t.share) + '）</span></dd></dl></div></div>';
+    if (!c.inv.length) return o + '<div class="hint">尚无任何收费记录。</div>';
+    o += '<table><tr><th>开具</th><th>项目</th><th class="n">应缴</th><th class="n">实收</th><th>状态</th></tr>';
+    for (const v of c.inv.slice().reverse()) {
+      const s = v.st === 'paid' ? '<span class="tag g">已缴' + (v.how && v.how !== '收费室' ? ' · ' + h(v.how) : '') + '</span>' : v.st === 'esc' ? '<span class="tag r" title="' + h(v.note || '') + '">离场未缴（不追缴）</span>' : '<span class="tag y">待缴</span>';
+      o += '<tr><td class="sm mut">' + IB.dateStr(v.d) + ' ' + IB.timeStr(v.m) + '</td><td>' + h(v.item) + (v.st === 'esc' && v.note ? '<div class="sm mut">' + h(v.note) + '</div>' : '') + '</td><td class="n">' + money(v.due) + '</td><td class="n">' + money(v.paid) + '</td><td>' + s + '</td></tr>';
+    }
+    return o + '</table><div class="sm mut">补考按统一标准价再次报名，不加价。临时工工资不抵扣个人账单。</div>';
+  }
+  function citBeh(c) {
+    const list = c.beh.filter(b => !b.hid).slice().reverse();
+    if (!list.length) return '<div class="hint">尚无行为记录。</div>';
+    return '<table>' + list.map(b => '<tr><td class="sm mut" style="width:118px">' + IB.dateStr(b.d) + ' ' + IB.timeStr(b.m) + '</td><td style="width:86px"><span class="tag">' + h(b.a) + '</span></td><td>' + h(b.t) + '</td></tr>').join('') + '</table>' +
+      '<div class="sm mut">未被发现的违规行为不会出现在履历中，查实后才会补记。</div>';
+  }
+  function citHire(c) {
+    const S = IB.S, f = ui.offer;
+    let o = '<div class="grid2"><div><div class="b sm">可评估能力</div>' + [['inspect', '巡查稽核'], ['liaison', '外联跑证'], ['relate', '关系维护']].map(k => '<div class="row sm"><span style="width:64px" class="mut">' + k[1] + '</span>' + bar(c.skills[k[0]], 'w') + ' ' + c.skills[k[0]] + '</div>').join('') + '</div>' +
+      '<div><dl class="kv sm"><dt>期望日薪</dt><dd>约 ' + c.expect + '</dd><dt>原则性</dt><dd>' + c.tr.principle + (c.tr.principle > 70 ? '（很难接受违规交换）' : '') + '</dd><dt>经济压力</dt><dd>' + c.fin + '</dd></dl></div></div>';
+    const s = c.staff && IB.St(c.staff);
+    if (s) return o + '<div class="card"><b>现任本中心「' + D.JOBS[s.job].name + '」</b>（临时合同）· 日薪 ' + s.wage + ' · 至 ' + IB.dateStr(s.end) + ' · 满意度 ' + Math.round(s.sat) + '<div class="row" style="margin-top:6px">' + btn('gotoStaff', '到员工排班查看', 'data-id="' + s.id + '"', 'sm') + '</div></div>' +
+      '<div class="sm mut">临时工仍保留考籍，办理本人考务当天会请假。</div>';
+    if (!c.firstDay) return o + '<div class="hint">对方尚未到访过本中心，无法谈合同。</div>';
+    const cur = IB.curCourse(c), canSwap = cur && !c.rec[cur].wEx && !c.rec[cur].pEx;
+    const p = IB.offerChance(c, f.job, f.wage, f.days, f.swap && canSwap), will = p >= 0.7 ? '较高' : p >= 0.4 ? '一般' : '较低';
+    o += '<h3>临时合同邀约 <small>每人每日只能谈一次</small></h3><div class="card"><div class="row">岗位 <select data-chg="offerJob">' + ['inspector', 'liaison', 'relations'].map(k => opt(k, D.JOBS[k].name, f.job)).join('') + '</select>' +
+      ' 日薪 <input type="number" data-chg="offerWage" min="40" max="200" step="2" value="' + f.wage + '" style="width:70px">' +
+      ' 期限 <select data-chg="offerDays">' + IB.TEMP_DAYS.map(d => opt(d, d + ' 个营业日', f.days)).join('') + '</select></div>' +
+      '<label class="row sm" style="margin-top:6px"><input type="checkbox" data-chg="offerSwap"' + (f.swap && canSwap ? ' checked' : '') + (canSwap ? '' : ' disabled') + '> 以当前科目的单项免考作为交换条件 <span class="bad">（违规：会留档，上级抽查查实将撤销并罚款；原则性高者会拒绝并举报）</span></label>' +
+      '<div class="row sp" style="margin-top:6px"><span class="sm">接受意愿估计：<b>' + will + '</b><span class="mut">（估计）</span>' + (D.JOBS[f.job].room && !S.rooms.some(r => r.type === D.JOBS[f.job].room) ? ' · <span class="bad">需先建成' + D.ROOMS[D.JOBS[f.job].room].short + '</span>' : '') + '</span>' +
+      btn('offer', c.askDay === S.day ? '今日已谈过' : '发出邀约', 'data-id="' + c.id + '"', 'pri', c.askDay === S.day) + '</div></div>' +
+      '<div class="sm mut">巡查员可分配大门收费稽核、考场纪律、员工廉洁、全馆机动四种任务；外联跑证员负责机构升级送件；政务关系维护员可缩短跑证天数。</div>';
+    return o;
+  }
+
+  // ---------- 房间、建造及其他弹窗 ----------
+  function roomModal(rm) {
+    const S = IB.S, def = D.ROOMS[rm.type];
+    const stf = S.staff.filter(s => s.room === rm.id);
+    let o = '<div class="hint">' + h(def.desc) + ' 每营业日维护费 ' + def.upkeep + '，建于 ' + IB.dateStr(rm.built) + '。</div>';
+    if (def.job) o += '<h3>排班 <small>岗位：' + D.JOBS[def.job].name + '</small></h3>' + (stf.length ? stf.map(s => { const st = staffState(s); return '<div class="row sm"><span class="sw" style="background:' + D.JOBS[s.job].color + '"></span><b>' + h(s.name) + '</b><span class="tag ' + st[1] + '">' + h(st[0]) + '</span>' + btn('gotoStaff', '排班', 'data-id="' + s.id + '"', 'sm') + '</div>'; }).join('') : '<div class="bad sm">没有排班人员，该房间无法提供服务。' + btn('tab', '去排班', 'data-v="staff"', 'sm') + '</div>');
+    if (rm.q.length) o += '<h3>排队 <small>' + rm.q.length + ' 人</small></h3><div class="row">' + rm.q.slice(0, 12).map(aid => { const a = IB.A(aid), c = a && IB.C(a.cid); return c ? '<button class="btn sm" data-act="cit" data-id="' + c.id + '">' + h(c.name) + '</button>' : ''; }).join('') + '</div>';
+    if (rm.type === 'written' || rm.type === 'practical') {
+      const ses = Object.keys(S.sessions).map(k => S.sessions[k]).filter(x => x.room === rm.id && x.cids.length && x.st !== 'done' && x.st !== 'cancel').sort((a, b) => a.day - b.day || a.slot - b.slot);
+      o += '<h3>已预约场次</h3>' + (ses.length ? ses.slice(0, 10).map(x => '<div class="card sm"><b>' + (x.day === S.day ? '今日' : IB.dateStr(x.day)) + ' ' + IB.timeStr(x.kind === 'w' ? D.W_SLOTS[x.slot] : D.P_SLOTS[x.slot]) + '</b> ' +
+        (x.kind === 'w' ? h(D.COURSE[x.course].short) + ' 笔试' : '实操考核') + ' ' + (x.st === 'run' ? '<span class="tag b">进行中</span>' : '') + '<div class="row" style="margin-top:3px">' + x.cids.map(cid => { const c = IB.C(cid); return c ? '<button class="btn sm" data-act="cit" data-id="' + c.id + '">' + h(c.name) + '</button>' : ''; }).join('') + '</div></div>').join('') : '<div class="sm mut">暂无预约。</div>');
+    }
+    if (rm.type === 'grading') o += '<h3>阅卷</h3><div class="sm">待批 <b>' + S.gq.length + '</b> 份。成绩最早在考试次营业日发布，本人返访查分后才生效。' + (S.policies.aiGrading ? ' AI 辅助阅卷已启用（仍需阅卷员在岗签字）。' : '') + '</div>';
+    if (rm.type === 'bookstore') o += '<div class="row">' + btn('tab', '管理库存与进货', 'data-v="course"', 'sm') + '</div>';
+    if (rm.type === 'liaison') o += '<div class="row">' + btn('tab', '查看机构升级进度', 'data-v="audit"', 'sm') + '</div>';
+    if (rm.type === 'petition') o += '<div class="sm">' + (S.petitions.length ? '有 ' + S.petitions.length + ' 位公民在等候裁决。' : '连续落榜的公民会来这里向局长申诉。') + '</div>';
+    const back = Math.round(def.cost * 0.3);
+    o += '<h3>拆除</h3><div class="row">' + btn('demolish', ui.confirm === 'demo' + rm.id ? '确认拆除？' : '拆除房间（返还 ' + back + '）', 'data-id="' + rm.id + '"', 'sm warn') + '<span class="sm mut">房间内有人办理或有已预约场次时无法拆除。</span></div>';
+    return '<div class="dlg"><header><span class="sw" style="background:' + def.color + ';width:20px;height:20px;border:1px solid var(--line)"></span><h2>' + h(def.name) + '<small>' + h(roomLabel(rm)) + '</small></h2><button class="x" data-act="close">×</button></header><div class="body">' + o + '</div></div>';
+  }
+  function buildModal(lot) {
+    const S = IB.S;
+    let o = '<div class="buildgrid">';
+    for (const t of D.ROOM_ORDER) {
+      const def = D.ROOMS[t], has = S.rooms.some(r => r.type === t);
+      const why = !def.multi && has ? '已建成（只能建一间）' : S.cash < def.cost ? '现金不足' : '';
+      o += '<div class="card' + (why ? ' dis' : '') + '" ' + (why ? '' : 'data-act="build" data-id="' + lot + '" data-v="' + t + '"') + '><div class="row sp"><b><span class="sw" style="background:' + def.color + ';border:1px solid var(--line)"></span> ' + h(def.name) + '</b><span class="b">' + money(def.cost) + '</span></div>' +
+        '<div class="sm mut">' + h(def.desc) + '</div><div class="sm">维护 ' + def.upkeep + '/日' + (def.job ? ' · 需' + D.JOBS[def.job].name + (D.JOBS[def.job].temp ? '（临时合同）' : '') : ' · 无需排班') + (why ? ' · <span class="bad">' + why + '</span>' : '') + '</div></div>';
+    }
+    return '<div class="dlg wide"><header><h2>在空地上建造<small>现金 ' + money(S.cash) + ' · 单层平面，共 ' + IB.geo.LOT_COUNT + ' 块地</small></h2><button class="x" data-act="close">×</button></header><div class="body">' + o + '</div></div></div>';
+  }
+  function menuModal() {
+    const chk = (k, label) => '<label class="row"><input type="checkbox" data-chg="opt" data-k="' + k + '"' + (ui[k] ? ' checked' : '') + '> ' + label + '</label>';
+    return '<div class="dlg"><header><h2>菜单</h2><button class="x" data-act="close">×</button></header><div class="body">' +
+      '<h3>存档</h3><div class="row">' + btn('save', '💾 存档') + btn('load', '📂 读取存档') + btn('export', '⬇ 导出 JSON') + btn('import', '⬆ 导入 JSON') + '</div>' +
+      '<div class="sm mut" style="margin-top:4px">存档保存在本机浏览器内；长期游玩后存档会达到数 MB，建议定期导出 JSON 备份。</div>' +
+      '<h3>设置</h3>' + chk('sound', '音效') + chk('autosave', '每个营业日开门时自动存档') + chk('petPause', '有公民祈愿时自动暂停') +
+      '<h3>其他</h3><div class="row">' + btn('rename', '修改昵称与中心名称') + btn('help', '玩法说明') + btn('restart', ui.confirm === 'restart' ? '确认放弃当前进度？' : '重新开局', '', 'warn') + '</div></div></div>';
+  }
+  function renameModal() {
+    const S = IB.S;
+    return '<div class="dlg"><header><h2>修改名称</h2><button class="x" data-act="close">×</button></header><div class="body">' +
+      '<div class="row" style="margin-bottom:8px"><span style="width:90px">局长昵称</span><input type="text" id="rn-player" maxlength="24" value="' + h(S.player) + '" style="flex:1"></div>' +
+      '<div class="row" style="margin-bottom:10px"><span style="width:90px">中心名称</span><input type="text" id="rn-center" maxlength="28" value="' + h(S.center) + '" style="flex:1"></div>' +
+      '<div class="row">' + btn('renameOk', '保存', '', 'pri') + '<span class="sm mut">改名后招牌、公告与后续记录同步更新；已写入履历的旧记录保持原样。</span></div></div></div>';
+  }
+  function helpModal(first) {
+    const S = IB.S;
+    return '<div class="dlg wide"><header><h2>' + (first ? '欢迎上任，' + h(S.player) + ' 局长' : '玩法说明') + '<small>' + h(S.center) + '</small></h2><button class="x" data-act="close">×</button></header><div class="body">' +
+      '<div class="hint">技术上，公民只需要按下那个绿色的“自动修复”按钮。但在按下之前，他们得先考完七项认证、交齐材料、等上级电子签发、再排队等名额。你负责让这一切“合规地”运转。</div>' +
+      '<div class="grid2"><div><h3>公民怎么行动</h3><div class="sm">登记建档 → 材料审核（可能缺件，回家补件再来）→ 收费室缴费并预约 → 按预约日到考 → 试卷封存、阅卷员批阅 → 最早次营业日发布 → <b>本人再来一趟查分</b> → 合格进入下一项，不合格自己决定买教辅、请私教、回家复习或直接再约。</div>' +
+      '<h3>钱从哪里来</h3><div class="sm">每日定额拨款，加上真实发生的登记、到访、报名、咨询、教材等收费。补考不加价。没缴费就走出离场线的，账就挂在那里，不追缴——除非大门有巡查员拦下。</div></div>' +
+      '<div><h3>你能做什么</h3><div class="sm">· 点击<b>空地</b>建房，点击<b>房间</b>看排班与场次，点击<b>人物</b>看五页档案。<br>· <b>员工排班</b>：向人事编制署申请正式员工（次日答复，可能不对口）；巡查员、外联跑证员只能从来访公民里签临时合同。<br>· <b>公民与个案</b>：处理续考祈愿，每天可鼓励 3 人次。<br>· <b>课程与书店</b>：进货、换版、看考试日程。<br>· <b>审计与政策</b>：看账、申请机构升级、开关政策。</div>' +
+      '<h3>开局提示</h3><div class="sm">一级中心只能受理前两项认证。攒够真实到考与报名数据后，建政务联络处、签一名外联跑证员，去申请升级。开局那位巡查员的合同第 10 个营业日到期，记得续签。</div></div></div>' +
+      '<div class="row" style="margin-top:12px">' + btn('close', first ? '开门营业' : '知道了', '', 'pri') + '</div></div></div>';
+  }
+  function renderModal() {
+    const m = ui.modal, el = $('modal');
+    if (!m) { if (!el.hidden) { el.hidden = true; el.innerHTML = ''; } return; }
+    let html = '';
+    if (m.t === 'cit') { const c = IB.C(m.id); if (c) html = citModal(c); }
+    else if (m.t === 'room') { const rm = IB.Rm(m.id); if (rm) html = roomModal(rm); }
+    else if (m.t === 'build') html = IB.lotFree(m.lot) ? buildModal(m.lot) : '';
+    else if (m.t === 'menu') html = menuModal();
+    else if (m.t === 'rename') html = renameModal();
+    else if (m.t === 'help') html = helpModal(m.first);
+    if (!html) { ui.modal = null; el.hidden = true; el.innerHTML = ''; return; }
+    const body = el.querySelector('.body'), top = body ? body.scrollTop : 0, same = el.dataset.key === m.t + ':' + (m.id || m.lot || '') + ':' + (m.t === 'cit' ? ui.citTab : '');
+    el.innerHTML = html; el.hidden = false;
+    el.dataset.key = m.t + ':' + (m.id || m.lot || '') + ':' + (m.t === 'cit' ? ui.citTab : '');
+    const nb = el.querySelector('.body');
+    if (nb && same) nb.scrollTop = top;
+  }
+
+  // ---------- 刷新 ----------
+  const editing = box => { const a = document.activeElement; return a && box.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'); };
+  function renderPanel() {
+    const S = IB.S;
+    const dots = { staff: S.apps.filter(a => a.cand).length, cit: S.petitions.length, course: 0, audit: (S.up.stage === 'pack' || S.up.stage === 'ready' || S.up.stage === 'rejected') ? 1 : 0 };
+    $('tabs').innerHTML = TABS.map(t => '<button data-act="tab" data-v="' + t[0] + '" class="' + (ui.tab === t[0] ? 'on' : '') + '">' + t[1] + (dots[t[0]] ? '<span class="dot">' + dots[t[0]] + '</span>' : '') + '</button>').join('');
+    $('tabbody').innerHTML = ui.tab === 'staff' ? tabStaff() : ui.tab === 'cit' ? tabCit() : ui.tab === 'course' ? tabCourse() : tabAudit();
+  }
+  function refresh(force) {
+    if (!ui.started) return;
+    updTop();
+    renderOverlays();
+    if (force || !(ui.down || editing($('panel')))) renderPanel();
+    if (force || !(ui.down || editing($('modal')))) renderModal();
+    ui.nextRefresh = performance.now() + 450;
+  }
+
+  // ---------- 时间推进 ----------
+  function onNewDay(quiet) {
+    const r = IB.S.lastReport;
+    if (r && !quiet) toast(IB.dateStr(r.day) + ' 结算：收入 ' + money(r.inc) + '，支出 ' + money(Math.abs(r.exp)) + '，净额 ' + (r.net >= 0 ? '+' : '') + money(r.net) + '，到访 ' + r.vis + ' 人次');
+    if (ui.autosave) saveGame(true);
+  }
+  function checkPetition() {
+    const n = IB.S.petitions.length;
+    const more = n > ui.pets;
+    ui.pets = n;
+    if (more && ui.petPause && !ui.paused) { ui.paused = true; toast('有公民在祈愿室等候裁决，已自动暂停'); }
+    return more;
+  }
+  function skip(mode) {
+    const S0 = IB.S, target = S0.day + (mode === 'day' ? 1 : 5), k0 = S0.keySeq;
+    let guard = 5 * 600 + 20, days = 0, why = '';
+    while (IB.S.day < target && guard-- > 0) {
+      if (IB.tick()) days++;
+      if (IB.S.petitions.length > ui.pets) { why = '有公民祈愿，快进已停下'; break; }
+      ui.pets = IB.S.petitions.length;
+      if (mode === 'key' && IB.S.keySeq !== k0) { why = '出现需要关注的事件'; break; }
+    }
+    drainFX(true);
+    ui.acc = 0;
+    if (days) onNewDay(true);
+    if (why) { ui.paused = true; ui.pets = IB.S.petitions.length; toast(why + '（已暂停）'); beep('ask'); }
+    else toast('已快进到 ' + IB.dateStr(IB.S.day) + ' ' + IB.timeStr(IB.S.minute));
+    refresh(true);
+  }
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    if (!ui.started) return;
+    const dt = Math.min(0.25, (ts - ui.last) / 1000 || 0);
+    ui.last = ts;
+    let ticked = false;
+    if (!ui.paused) {
+      ui.acc += dt * TICKS_PER_SEC * ui.speed;
+      let n = 0;
+      while (ui.acc >= 1 && n < 12) {
+        ui.acc -= 1; n++; ticked = true;
+        if (IB.tick()) onNewDay(false);
+        if (checkPetition()) { ui.acc = 0; break; }
+      }
+      if (ui.acc > 1) ui.acc = 1;
+    }
+    if (ticked) drainFX(false);
+    RENDER.draw(ui.paused ? 1 : Math.min(1, ui.acc));
+    if (ticked || ts > ui.nextRefresh) { if (ts > ui.nextRefresh) refresh(false); else updTop(); }
+  }
+
+  // ---------- 交互 ----------
+  const ACT = {
+    start: startNew,
+    async continue() { const j = await readSave(); if (j) applyLoaded(j); else renderStart('没有找到存档。'); },
+    import() { $('importfile').value = ''; $('importfile').click(); },
+    speed(d) { const v = +d.v; if (!v) ui.paused = !ui.paused; else { ui.speed = v; ui.paused = false; } beep('click'); },
+    skip(d) { skip(d.v); },
+    tab(d) { ui.tab = d.v; ui.modal = null; ui.confirm = ''; $('tabbody').scrollTop = 0; },
+    menu() { ui.modal = { t: 'menu' }; },
+    help() { ui.modal = { t: 'help' }; },
+    rename() { ui.modal = { t: 'rename' }; },
+    renameOk() { IB.rename($('rn-player').value, $('rn-center').value); ui.modal = null; toast('名称已更新'); },
+    close() { ui.modal = null; ui.confirm = ''; },
+    zoom(d) { const f = +d.a; if (f) RENDER.zoomBy(f); else RENDER.resetView(); },
+    cit(d) { ui.modal = { t: 'cit', id: +d.id }; ui.citTab = d.v || ui.citTab; if (d.k) { ui.offer.job = d.k; ui.offer.wage = D.JOBS[d.k].wage; } const c = IB.C(+d.id); if (c && c.agent) RENDER.state.sel = c.agent; },
+    citTab(d) { ui.citTab = d.v; },
+    locate(d) { const a = IB.A(+d.id); if (a) { RENDER.state.sel = a.id; RENDER.focus(a.x, a.y); ui.modal = null; } },
+    pet(d) { res(IB.petitionDecide(+d.id, d.v)); ui.pets = IB.S.petitions.length; beep('stamp'); },
+    enc(d) { res(IB.encourage(+d.id, d.v)); },
+    mid(d) { if (!IB.reorderMid(+d.id, d.k, +d.v)) toast('只能调整尚未报考的中段科目', true); },
+    offer(d) { const f = ui.offer; const r = IB.offerTemp(+d.id, f.job, f.wage, f.days, f.swap); res(r); if (r.accepted) { beep('pass'); f.swap = false; } },
+    gotoStaff(d) { ui.tab = 'staff'; ui.hl = +d.id; ui.modal = null; setTimeout(() => { const el = $('stf' + d.id); if (el) el.scrollIntoView({ block: 'center' }); }, 30); },
+    apply() { res(IB.applyFormal(ui.applyJob)) && toast('申请已提交，最早次营业日答复'); },
+    accept(d) { const r = IB.acceptCandidate(+d.id); if (res(r) && r.staff) { ui.hl = r.staff.id; toast(r.staff.name + ' 已入职'); } },
+    decline(d) { res(IB.declineCandidate(+d.id)); },
+    bonus(d) { res(IB.bonus(+d.id)); },
+    renew(d) { res(IB.renew(+d.id, ui.renewDays[d.id] || 5)); },
+    dismiss(d) { const k = 'dismiss' + d.id; if (ui.confirm !== k) { ui.confirm = k; return; } ui.confirm = ''; res(IB.dismiss(+d.id)); },
+    buy(d) { res(IB.buyStock(d.id, +d.v)); },
+    recycle(d) { const r = IB.recycleOld(d.id); if (res(r)) toast('已回收，回款 ' + r.back); },
+    policy(d) { res(IB.togglePolicy(d.id)); beep('stamp'); },
+    upStart() { res(IB.startUpgrade()); },
+    upSend() { res(IB.sendLiaison()); },
+    stamp(d) { res(IB.stampProof(+d.v)); },
+    build(d) { const r = IB.buildRoom(d.v, +d.id); if (res(r)) { ui.modal = { t: 'room', id: r.room.id }; toast('已建成 ' + D.ROOMS[d.v].name); } },
+    demolish(d) { const k = 'demo' + d.id; if (ui.confirm !== k) { ui.confirm = k; return; } ui.confirm = ''; const r = IB.demolishRoom(+d.id); if (res(r)) { ui.modal = null; toast('已拆除'); } },
+    save() { saveGame(false); },
+    async load() { const j = await readSave(); if (j) applyLoaded(j); else toast('没有找到存档', true); },
+    export: exportJSON,
+    restart() { if (ui.confirm !== 'restart') { ui.confirm = 'restart'; return; } ui.confirm = ''; ui.started = false; ui.modal = null; renderModal(); $('app').hidden = true; $('start').hidden = false; renderStart(); },
+  };
+  const CHG = {
+    duty(v, d) { res(IB.setDuty(+d.id, v)); },
+    assign(v, d) { res(IB.assignStaff(+d.id, v ? +v : 0)); },
+    rest(v, d) { res(IB.setRest(+d.id, v)); },
+    renewDays(v, d) { ui.renewDays[d.id] = +v; },
+    applyJob(v) { ui.applyJob = v; },
+    filter(v) { ui.filter = v; },
+    offerJob(v) { ui.offer.job = v; ui.offer.wage = D.JOBS[v].wage; },
+    offerWage(v) { ui.offer.wage = Math.max(40, Math.min(200, Math.round(+v) || 40)); },
+    offerDays(v) { ui.offer.days = +v; },
+    offerSwap(v, d, el) { ui.offer.swap = el.checked; },
+    opt(v, d, el) { ui[d.k] = el.checked; saveOpt(); },
+  };
+  function boot() {
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-act]');
+      if (!el || el.disabled) {
+        if (e.target.id === 'modal') { ui.modal = null; ui.confirm = ''; refresh(true); }
+        return;
+      }
+      const f = ACT[el.dataset.act];
+      if (!f) return;
+      const r = f(el.dataset, el);
+      if (!ui.started) return;
+      if (r && r.then) r.then(() => refresh(true)); else refresh(true);
+    });
+    document.addEventListener('change', e => {
+      const el = e.target;
+      if (el.id === 'importfile') {
+        const file = el.files && el.files[0];
+        if (!file) return;
+        const rd = new FileReader();
+        rd.onload = () => { if (!applyLoaded(String(rd.result)) && !ui.started) renderStart('导入失败：文件不是有效的存档。'); };
+        rd.readAsText(file);
+        return;
+      }
+      const f = el.dataset && CHG[el.dataset.chg];
+      if (!f) return;
+      f(el.value, el.dataset, el);
+      el.blur();
+      refresh(true);
+    });
+    document.addEventListener('input', e => {
+      if (e.target.dataset && e.target.dataset.inp === 'q') { ui.q = e.target.value; const l = $('citlist'); if (l) l.innerHTML = citRows(); }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        if (e.key === 'Enter' && (e.target.id === 'in-player' || e.target.id === 'in-center')) startNew();
+        return;
+      }
+      if (!ui.started) return;
+      if (e.key === 'Escape' && ui.modal) { ui.modal = null; ui.confirm = ''; refresh(true); }
+      else if (e.key === ' ') { e.preventDefault(); ui.paused = !ui.paused; refresh(false); }
+      else if (e.key === '1' || e.key === '2' || e.key === '4') { ui.speed = +e.key; ui.paused = false; refresh(false); }
+    });
+    document.addEventListener('pointerdown', e => { if (e.target.closest('#panel, #modal')) ui.down = true; });
+    document.addEventListener('pointerup', () => { ui.down = false; });
+    document.addEventListener('pointercancel', () => { ui.down = false; });
+    window.addEventListener('beforeunload', e => { if (ui.started) { e.preventDefault(); e.returnValue = ''; } });
+    RENDER.init($('map'), {
+      onAgent(a) {
+        RENDER.state.sel = a.id;
+        if (a.k === 'cit') { ui.modal = { t: 'cit', id: a.cid }; }
+        else if (a.k === 'stf') { const s = IB.St(a.sid); if (s) ACT.gotoStaff({ id: s.id }); }
+        else toast(a.name + (a.role === 'review' ? '：正在复核机构升级申请' : '：正在例行审查，结论会写入审计页'));
+        refresh(true);
+      },
+      onLot(lot, rm) { ui.confirm = ''; ui.modal = rm ? { t: 'room', id: rm.id } : { t: 'build', lot }; refresh(true); },
+    });
+    if (window.ResizeObserver) new ResizeObserver(() => RENDER.resize()).observe($('mapwrap'));
+    renderStart();
+    readSave().then(j => { if (j && !ui.started) { ui.hasSave = true; const p = $('in-player').value, c = $('in-center').value; renderStart(); $('in-player').value = p; $('in-center').value = c; } });
+    requestAnimationFrame(frame);
+  }
+  boot();
+  return { ui, refresh, toast };
+})();
+
+</script>
+</body>
+</html>
