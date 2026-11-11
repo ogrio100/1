@@ -230,13 +230,16 @@ function newCitizen(tplKey) {
   return c;
 }
 function beh(c, action, text, opt) {
-  c.beh.push({ d: S.day, m: S.minute, a: action, t: text, hid: !!(opt && opt.hid), inv: (opt && opt.inv) || 0 });
+  const h = { d: S.day, m: S.minute, a: action, t: text };
+  if (opt && opt.hid) h.hid = true;
+  if (opt && opt.inv) h.inv = opt.inv;
+  c.beh.push(h);
 }
 
 // ---------- 个人账本 ----------
 function invoice(c, item, cat, due, cost, room) {
   if (!(due > 0)) return null;
-  const v = { id: nid(), d: S.day, m: S.minute, item, cat, due: Math.round(due), paid: 0, refund: 0, st: 'open', cost: cost || 0, room: room || '', vis: c.visitN, pd: 0, pm: 0, how: '', note: '' };
+  const v = { id: nid(), d: S.day, m: S.minute, item, cat, due: Math.round(due), paid: 0, st: 'open', cost: cost || 0, room: room || '', vis: c.visitN };
   c.inv.push(v);
   daily(S.day).due += v.due;
   return v;
@@ -261,7 +264,7 @@ function markEscaped(c, v, why) {
 function totals(c) {
   const t = { due: 0, paid: 0, refund: 0, net: 0, unpaid: 0, cost: 0, gross: 0, est: 0, byCat: {} };
   for (const v of c.inv) {
-    t.due += v.due; t.paid += v.paid; t.refund += v.refund;
+    t.due += v.due; t.paid += v.paid; t.refund += v.refund || 0;
     if (v.st === 'esc' || v.st === 'open') t.unpaid += v.due - v.paid;
     if (v.st === 'paid' || v.st === 'esc') t.cost += v.cost;
     t.byCat[v.cat] = (t.byCat[v.cat] || 0) + v.paid;

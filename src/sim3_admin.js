@@ -22,11 +22,14 @@ function freeStation(rm, except) {
 function autoRoom(s) {
   const rt = D.JOBS[s.job].room;
   if (!rt) return false;
+  let best = null, bi = -1, bn = 99;
   for (const rm of roomsOf(rt)) {
-    const i = freeStation(rm, s);
-    if (i >= 0) { s.room = rm.id; s.station = i; s.rest = i % 2 ? 'B' : 'A'; return true; }
+    const i = freeStation(rm, s), n = S.staff.filter(x => x !== s && x.room === rm.id).length;
+    if (i >= 0 && n < bn) { best = rm; bi = i; bn = n; }
   }
-  return false;
+  if (!best) return false;
+  s.room = best.id; s.station = bi; s.rest = bi % 2 ? 'B' : 'A';
+  return true;
 }
 function addStaff(p, job, temp, wage) {
   const s = {
@@ -515,7 +518,7 @@ function licensing() {
     if (!c.license) {
       if (S.day <= c.reported) continue;
       c.license = true; c.licDay = S.day; c.slot = 'wait'; c.slotDay = S.day + ri(3, 8);
-      S.stats.licenses++; addTrust(1);
+      S.stats.licenses++; addTrust(0.2);
       beh(c, '电子许可', '上级系统电子签发' + D.FINAL_LICENSE + '（非本中心制证）；进入生命维护名额公开候补');
       log('🏅 上级系统为 ' + c.name + ' 电子签发' + D.FINAL_LICENSE + '。签发不等于名额，现进入公开候补。', 'key');
     } else if (c.slot === 'wait' && S.day >= c.slotDay) {
@@ -658,6 +661,9 @@ function endDay() {
   // 信任与合规的缓慢变化
   const dd = daily(S.day);
   if (dd.esc > 0) addComp(-0.3); else if (S.comp < 70) addComp(0.2);
+  if (dd.wn) { const avg = dd.ws / dd.wn; if (avg < 12) addTrust(0.3); else if (avg > 30) addTrust(-0.5); }
+  addTrust((55 - S.trust) * 0.03);
+  addComp((65 - S.comp) * 0.02);
   let soft = 0;
   for (const k of ['oldEd', 'freeConsult', 'alienEquiv', 'expRecog', 'eDocs']) if (S.policies[k]) soft += 0.15;
   if (soft && S.trust < 85) addTrust(soft);

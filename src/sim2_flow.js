@@ -75,8 +75,10 @@ function examView(c, course) {
 }
 
 // ---------- 预约 ----------
+// 只向已排班考务人员的考场放号，避免把考生约进注定取消的场次
+const hasExamStaff = rm => S.staff.some(s => s.room === rm.id);
 function findWritten(course, fromDay) {
-  const halls = roomsOf('written');
+  const halls = roomsOf('written').filter(hasExamStaff);
   for (let d = fromDay; d < fromDay + 40; d++) for (let s = 0; s < D.W_SLOTS.length; s++) for (const rm of halls) {
     const key = 'w' + d + ':' + s + ':' + rm.id;
     let ses = S.sessions[key];
@@ -87,7 +89,7 @@ function findWritten(course, fromDay) {
   return null;
 }
 function findPractical(fromDay) {
-  const rooms = roomsOf('practical');
+  const rooms = roomsOf('practical').filter(hasExamStaff);
   for (let d = fromDay; d < fromDay + 40; d++) for (let s = 0; s < D.P_SLOTS.length; s++) for (const rm of rooms) {
     const key = 'p' + d + ':' + s + ':' + rm.id;
     let ses = S.sessions[key];
@@ -114,8 +116,8 @@ function bookExam(c) {
   if (co.level > S.level) { beh(c, '等待资质', '本中心尚无「' + co.short + '」考试授权，回家等待中心升级'); return false; }
   const bk = reserve(c, ne.course, ne.kind);
   if (!bk) {
-    beh(c, '预约失败', '中心暂无可用的' + (ne.kind === 'w' ? '笔试厅' : '实操室') + '，未收费');
-    log('⚠️ ' + c.name + ' 无法预约' + (ne.kind === 'w' ? '笔试：缺少笔试厅' : '实操：缺少实操室') + '。', 'bad');
+    beh(c, '预约失败', '中心暂无可放号的' + (ne.kind === 'w' ? '笔试厅' : '实操室') + '（需已排班考务人员），未收费');
+    log('⚠️ ' + c.name + ' 无法预约' + (ne.kind === 'w' ? '笔试：没有已排班监考员的笔试厅' : '实操：没有已排班考评员的实操室') + '。', 'bad');
     return false;
   }
   const rec = c.rec[ne.course], nth = (ne.kind === 'w' ? rec.wTries : rec.pTries) + 1;
@@ -271,7 +273,9 @@ function gateCheck(a, c) {
   FX.push('alert');
 }
 function finalize(a, c) {
-  if (a.tw > 60) addTrust(-0.4); else if (a.tw > 35) addTrust(-0.15); else if (a.tw < 10) addTrust(0.02);
+  const dd = daily(S.day);
+  dd.wn = (dd.wn || 0) + 1; dd.ws = (dd.ws || 0) + a.tw;
+  if (a.tw > 60) addTrust(-0.2);
   removeAgent(a);
   c.agent = 0;
   if (c.status === 'visit') c.status = 'home';
@@ -511,7 +515,7 @@ function afterCert(c, course, a) {
   const rec = c.rec[course], co = D.COURSE[course];
   if (rec.cert) return;
   rec.cert = true; rec.certDay = S.day;
-  S.stats.certs++; addTrust(0.06);
+  S.stats.certs++; addTrust(0.03);
   c.stress = clamp(c.stress - 12, 0, 100); c.patience = clamp(c.patience + 12, 0, 100);
   c.study = null; c.strategy = '';
   beh(c, '取得认证', '取得' + co.name + '（' + certCount(c) + '/7）');
